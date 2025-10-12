@@ -3,7 +3,7 @@
 class BaseCommand
 {
 public:
-	BaseCommand(char** args) : m_Args(args) { }
+	BaseCommand(const std::vector<std::string>& args) : m_v_args(args) { }
 	virtual ~BaseCommand() = default;
 
 	
@@ -11,7 +11,7 @@ public:
 	virtual void Execute() = 0;
 
 protected:
-	char** m_Args;
+	std::vector<std::string> m_v_args;
 
 private:
 	virtual void PrintError();

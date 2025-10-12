@@ -1,43 +1,60 @@
 #pragma once
 #include "Commands/Commands.hpp"
 
+#define ADD_CMD(String, Command) {String, std::bind(&FSCLT::CreateCommand<Command>, this, std::placeholders::_1)}
+
 class BaseCommand;
 
 class FSCLT
 {
 public:
-	FSCLT(int argc, char* argv[]);
+	FSCLT(int argc, const std::vector<std::string>& argv);
 	~FSCLT() = default;
 
 	//returns false when fails, true when succses
 	bool Run();
+
+	static FSCLT& Get();
+
+	inline const std::vector<BaseCommand*>& GetAllCommands() const
+	{
+		for (auto it = m_um_CommandFlags.begin(); it != m_um_CommandFlags.end(); it++)
+		{
+			it->second(std::vector<std::string>());
+		}
+
+		return m_v_Commands;
+	}
+
+
 private:
 	bool Parse();
-	std::vector<char*> CatchArguments(size_t offset, size_t& newOffset);
+	std::vector<std::string> CatchArguments(size_t offset, size_t& newOffset);
+
 private:
 	template<typename T>
-	void CreateCommand(char** args);
+	void CreateCommand(const std::vector<std::string>& args);
 
 
 private:
-	int m_argc;
-	char** m_argv;
+	int m_Argc;
+	std::vector<std::string> m_Argv;
+
+	static FSCLT* fsclt;
 	
 	std::vector<BaseCommand*> m_v_Commands;
-
 	
-	std::unordered_map<std::string, std::function<void(char** args)>> m_um_CommandFlags
+	std::unordered_map<std::string, std::function<void(const std::vector<std::string>& args)>> m_um_CommandFlags
 	{
-		//Get Tool version
-		{"version", std::bind(&FSCLT::CreateCommand<CVersion>, this, std::placeholders::_1)},
-		//Print information
-		{"print", std::bind(&FSCLT::CreateCommand<CPrint>, this, std::placeholders::_1)}
-	};
+		//Print useful information like version or commands
+		ADD_CMD("print", CPrint)
 
+	};
 	
 };
+
 template<typename T>
-void FSCLT::CreateCommand(char** args)
+void FSCLT::CreateCommand(const std::vector<std::string>& args)
 {
 	static_assert(std::is_base_of<BaseCommand, T>::value, "T must derive from BaseCommand");
 

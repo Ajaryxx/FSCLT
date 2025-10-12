@@ -6,11 +6,13 @@ class CPrint : public BaseCommand
 {
 public:
 
-	CPrint(char** args) : BaseCommand(args) {}
+	CPrint(const std::vector<std::string>& args);
 
 private:
 
 	// Inherited via BaseCommand
 	void PrintUsageInfo() override;
 	void Execute() override;
+
+	std::string m_Argument;
 };

@@ -14,7 +14,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 set(PROJ_EXE "FSCLT")
 
 
-add_executable(${PROJ_EXE} "src/main.cpp" "src/FSCLT.cpp" "src/Commands/BaseCommand.cpp" "src/Commands/CVersion.cpp" "src/Commands/CPrint.cpp")
+add_executable(${PROJ_EXE} "src/main.cpp" "src/FSCLT.cpp" "src/Commands/BaseCommand.cpp"  "src/Commands/CPrint.cpp")
 target_include_directories(${PROJ_EXE} PRIVATE "include/")
 target_precompile_headers(${PROJ_EXE} PRIVATE "include/PCH.hpp")
 

@@ -3,7 +3,14 @@
 
 int main(int argc, char* argv[])
 {
-	FSCLT fsclt(argc, argv);
+	//Convert char* to std::string
+	std::vector<std::string> args;
+	for (size_t i = 0; i < argc; i++)
+	{
+		args.push_back(argv[i]);
+	}
+
+	FSCLT fsclt(argc, args);
 	bool result = fsclt.Run();
 
 	if(!result)
