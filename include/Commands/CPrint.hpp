@@ -1,12 +1,12 @@
 #pragma once
 #include "Commands/BaseCommand.hpp"
 
-//Prints out the current Tool Version
-class CVersion : public BaseCommand
+
+class CPrint : public BaseCommand
 {
 public:
-	CVersion(char** args) : BaseCommand(args){};
-	~CVersion() = default;
+
+	CPrint(char** args) : BaseCommand(args) {}
 
 private:
 

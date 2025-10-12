@@ -1,5 +1,5 @@
 #pragma once
-#include "CommandFlagStrings.hpp"
+#include "Commands/Commands.hpp"
 
 class BaseCommand;
 
@@ -13,9 +13,11 @@ public:
 	bool Run();
 private:
 	bool Parse();
-
+	std::vector<char*> CatchArguments(size_t offset, size_t& newOffset);
 private:
-	void CMD_VERSION();
+	template<typename T>
+	void CreateCommand(char** args);
+
 
 private:
 	int m_argc;
@@ -23,12 +25,21 @@ private:
 	
 	std::vector<BaseCommand*> m_v_Commands;
 
-
-	std::unordered_map<std::string, std::function<void()>> m_um_CommandFlags
+	
+	std::unordered_map<std::string, std::function<void(char** args)>> m_um_CommandFlags
 	{
 		//Get Tool version
-		{"version", std::bind(&FSCLT::CMD_VERSION, this)},
+		{"version", std::bind(&FSCLT::CreateCommand<CVersion>, this, std::placeholders::_1)},
+		//Print information
+		{"print", std::bind(&FSCLT::CreateCommand<CPrint>, this, std::placeholders::_1)}
 	};
 
 	
 };
+template<typename T>
+void FSCLT::CreateCommand(char** args)
+{
+	static_assert(std::is_base_of<BaseCommand, T>::value, "T must derive from BaseCommand");
+
+	m_v_Commands.push_back(new T(args));
+}
