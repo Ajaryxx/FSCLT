@@ -14,5 +14,4 @@ private:
 	void PrintUsageInfo() override;
 	void Execute() override;
 
-	std::string m_Argument;
 };

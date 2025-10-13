@@ -26,6 +26,13 @@ bool FSCLT::Run()
 	for (const auto& item : m_v_Commands)
 	{
 		item->Execute();
+		
+		for (auto& item : m_v_TempCommandBuffer)
+		{
+			delete item;
+			item = nullptr;
+		}
+		m_v_TempCommandBuffer.clear();
 	}
 }
 bool FSCLT::Parse()
@@ -42,7 +49,7 @@ bool FSCLT::Parse()
 			//Jump over current string(Command string)
 			std::vector<std::string>& buffer = CatchArguments(i + 1, newOffset);
 			//Stores the Command to the vector buffer so we can execute it later
-			it->second(buffer);
+			it->second(true, buffer);
 			i += newOffset;
 		}
 		else
