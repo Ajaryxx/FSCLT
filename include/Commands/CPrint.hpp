@@ -1,6 +1,9 @@
 #pragma once
 #include "Commands/BaseCommand.hpp"
 
+constexpr const char* ARG_INFO = "info";
+constexpr const char* ARG_COMMAND = "command";
+constexpr const char* ARG_VERSION = "version";
 
 class CPrint : public BaseCommand
 {
@@ -14,4 +17,5 @@ private:
 	void PrintUsageInfo() override;
 	void Execute() override;
 
+	void HandlePrintVersion();
 };

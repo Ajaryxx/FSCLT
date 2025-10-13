@@ -1,5 +1,5 @@
 #pragma once
-
+#include <map>
 class BaseCommand
 {
 public:
@@ -8,13 +8,18 @@ public:
 
 	
 	virtual void PrintUsageInfo() = 0;
-	virtual void Execute() = 0;
+	virtual void Execute();
 
 protected:
+	void BindCommand(const std::string& name, std::vector<std::string> pattern, std::function<void()> func);
+
 	std::vector<std::string> m_v_args;
+	std::map<std::vector<std::string>, std::function<void()>> m_um_CommandDispatch;
+	
 
 private:
 	virtual void PrintError();
 
+	
 
 };

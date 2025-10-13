@@ -3,6 +3,8 @@
 
 CPrint::CPrint(const std::vector<std::string>& args) : BaseCommand(args)
 {
+	BindCommand(ARG_INFO, std::vector<std::string>({"info", "version"}), std::bind(&CPrint::HandlePrintVersion, this));
+	BindCommand(ARG_INFO, std::vector<std::string>({ "info", "version" }), std::bind(&CPrint::HandlePrintVersion, this));
 
 }
 
@@ -17,7 +19,11 @@ fsclt prints info command [CommandName] -> [prints the Usage Info of [CommandNam
 }
 void CPrint::Execute()
 {
+	
 
-
-
+}
+void CPrint::HandlePrintVersion()
+{
+	std::cout << "version 0.1.0\n";
+	std::cout.flush();
 }

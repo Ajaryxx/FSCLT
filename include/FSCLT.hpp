@@ -16,27 +16,10 @@ public:
 
 	static FSCLT& Get();
 
-	inline const std::vector<BaseCommand*>& GetAllCommands() const
-	{
-		for (auto it = m_um_CommandFlags.begin(); it != m_um_CommandFlags.end(); it++)
-		{
-			it->second(false, std::vector<std::string>());
-		}
-
-		return m_v_TempCommandBuffer;
-	}
-	inline BaseCommand* GetCommand(const std::string& name)
-	{
-		auto& it = m_um_CommandFlags.find(name);
-
-		if (it != m_um_CommandFlags.end())
-		{
-			BaseCommand* cmd = it->second(false, std::vector<std::string>());
-			return cmd;
-		}
-
-		return nullptr;
-	}
+	const std::vector<BaseCommand*>& GetAllCommands() const;
+	
+	//Can return nullptr
+	BaseCommand* GetCommand(const std::string& name) const;
 
 private:
 	bool Parse();

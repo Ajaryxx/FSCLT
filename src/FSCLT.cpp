@@ -77,6 +77,27 @@ std::vector<std::string> FSCLT::CatchArguments(size_t offset, size_t& newOffset)
 	newOffset = args.size() + 1;
 	return args;
 }
+const std::vector<BaseCommand*>& FSCLT::GetAllCommands() const
+{
+	for (auto it = m_um_CommandFlags.begin(); it != m_um_CommandFlags.end(); it++)
+	{
+		it->second(false, std::vector<std::string>());
+	}
+
+	return m_v_TempCommandBuffer;
+}
+BaseCommand* FSCLT::GetCommand(const std::string& name) const
+{
+	auto& it = m_um_CommandFlags.find(name);
+
+	if (it != m_um_CommandFlags.end())
+	{
+		BaseCommand* cmd = it->second(false, std::vector<std::string>());
+		return cmd;
+	}
+
+	return nullptr;
+}
 FSCLT& FSCLT::Get()
 {
 	return *fsclt;
