@@ -4,23 +4,28 @@
 void BaseCommand::PrintError()
 {
 }
-void BaseCommand::BindCommand(const std::string& name, std::vector<std::string> pattern, std::function<void()> func)
+void BaseCommand::BindCommand(const std::vector<std::string>& pattern, std::function<void()> func)
 {
-	auto& it = m_um_CommandDispatch.find(pattern);
-	if (it != m_um_CommandDispatch.end())
+	
+	for (size_t i = 0; i < m_v_CommandDispatch.size(); i++)
 	{
-		std::cerr << "Command with pattern: [ ";
-		for (const auto& item : pattern)
-		{
-			std::cerr <<  item << ", ";
-		}
-		std::cerr << "] is already bound\n";
-		return;
+		const std::vector<std::string>& strVec = m_v_CommandDispatch[i].first;
+		
+		assert(!(strVec == pattern) && "You cant bind a command with the same pattern");
+			
 	}
-	m_um_CommandDispatch[pattern] = func;
+
+	m_v_CommandDispatch.push_back(std::make_pair(pattern, func));
 	
 }
 void BaseCommand::Execute()
 {
+	for (size_t i = 0; i < m_v_CommandDispatch.size(); i++)
+	{
+		const std::vector<std::string>& strVec = m_v_CommandDispatch[i].first;
+
+		if(strVec == m_v_args)
+
+	}
 
 }

@@ -1,5 +1,7 @@
 #pragma once
-#include <map>
+
+constexpr const char* ARG_USERINP = "@USER_INPUT@";
+
 class BaseCommand
 {
 public:
@@ -11,10 +13,10 @@ public:
 	virtual void Execute();
 
 protected:
-	void BindCommand(const std::string& name, std::vector<std::string> pattern, std::function<void()> func);
+	void BindCommand(const std::vector<std::string>& pattern, std::function<void()> func);
 
 	std::vector<std::string> m_v_args;
-	std::map<std::vector<std::string>, std::function<void()>> m_um_CommandDispatch;
+	std::vector<std::pair<std::vector<std::string>, std::function<void()>>> m_v_CommandDispatch;
 	
 
 private:

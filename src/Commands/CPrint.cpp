@@ -3,8 +3,8 @@
 
 CPrint::CPrint(const std::vector<std::string>& args) : BaseCommand(args)
 {
-	BindCommand(ARG_INFO, std::vector<std::string>({"info", "version"}), std::bind(&CPrint::HandlePrintVersion, this));
-	BindCommand(ARG_INFO, std::vector<std::string>({ "info", "version" }), std::bind(&CPrint::HandlePrintVersion, this));
+	BindCommand(std::vector<std::string>({"info", "version", ARG_USERINP}), std::bind(&CPrint::HandlePrintVersion, this));
+	BindCommand(std::vector<std::string>({ "info", "version", ARG_USERINP}), std::bind(&CPrint::HandlePrintVersion, this));
 
 }
 
