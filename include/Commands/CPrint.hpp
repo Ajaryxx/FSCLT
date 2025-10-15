@@ -1,9 +1,7 @@
 #pragma once
 #include "Commands/BaseCommand.hpp"
 
-constexpr const char* ARG_INFO = "info";
-constexpr const char* ARG_COMMAND = "command";
-constexpr const char* ARG_VERSION = "version";
+constexpr const char* CMD_NAME = "print";
 
 class CPrint : public BaseCommand
 {
@@ -15,7 +13,7 @@ private:
 
 	// Inherited via BaseCommand
 	void PrintUsageInfo() override;
-	void Execute() override;
 
-	void HandlePrintVersion();
+	void HandlePrintVersion(const std::vector<std::string>& UserArgs);
+	void HandlePrintVersion2(const std::vector<std::string>& UserArgs);
 };
