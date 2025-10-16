@@ -1,11 +1,8 @@
 #include "Commands/BaseCommand.hpp"
+#include "FSCLT.hpp"
 
 
-void BaseCommand::PrintError()
-{
-	
-}
-void BaseCommand::BindCommand(const std::vector<std::string>& pattern, std::function<void(const std::vector<std::string>& userArg)> func)
+void BaseCommand::BindCommand(const std::vector<std::string>& pattern, std::function<bool(const std::vector<std::string>& userArg)> func)
 {
 	for (size_t i = 0; i < m_v_CommandDispatch.size(); i++)
 	{
@@ -15,8 +12,9 @@ void BaseCommand::BindCommand(const std::vector<std::string>& pattern, std::func
 	}
 	m_v_CommandDispatch.push_back(std::make_pair(pattern, func));
 }
-void BaseCommand::Execute()
+bool BaseCommand::Execute()
 {
+	bool success = false;
 	for (size_t i = 0; i < m_v_CommandDispatch.size(); i++)
 	{
 		const std::vector<std::string>& strVec = m_v_CommandDispatch[i].first;
@@ -25,7 +23,7 @@ void BaseCommand::Execute()
 		if (strVec.size() != m_v_args.size())
 			continue;
 
-		//Check for equal a command
+		//Check for an equal command
 		bool IsEqual = true;
 		for (size_t j = 0; j < strVec.size(); j++)
 		{
@@ -42,12 +40,20 @@ void BaseCommand::Execute()
 		}
 		if (IsEqual)
 		{
-			std::cout << "Running Command [" << m_CommandName << "]..." << std::endl;
-			m_v_CommandDispatch[i].second(UserArgs);
-			return;
+			FSCLT::Get().ReportMessage("Running Command: [" + m_CommandName + "]...", MessageType::INFO);
+			//returns if the command operation was succsessful
+			success = m_v_CommandDispatch[i].second(UserArgs);
+			FSCLT::Get().ReportMessage("Command: [" + m_CommandName + "] successful executed.", MessageType::INFO);
+			FSCLT::Get().MakeNewLine(3);
+			return success;
 		}
 	}
-	std::cerr << "Invalid Command [" << m_CommandName << "] ";
+	std::string errorString;
+	
 	for (const auto& item : m_v_args)
-		std::cerr << "[" << item << "] ";
+		errorString.append(item + " ");
+
+	FSCLT::Get().ReportMessage(errorString, MessageType::ERROR);
+
+	return success;
 }

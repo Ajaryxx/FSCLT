@@ -2,6 +2,13 @@
 
 #define DECLARE_COMMAND_FLAG(CommandFlag, Class) DelcareCommand<Class>(CommandFlag)
 
+enum class MessageType : uint8_t
+{
+	INFO,
+	WARNING,
+	ERROR
+};
+
 class BaseCommand;
 
 class FSCLT
@@ -20,6 +27,8 @@ public:
 	//Can return nullptr
 	BaseCommand* GetCommand(const std::string& name) const;
 
+	void ReportMessage(const std::string& message, MessageType type);
+	void MakeNewLine(uint8_t n);
 private:
 	bool Parse();
 	std::vector<std::string> CatchArguments(size_t offset, size_t& newOffset);
@@ -29,6 +38,7 @@ private:
 	template<typename T>
 	BaseCommand* PushCommand(bool storeBuffer = true, const std::vector<std::string>& args = std::vector<std::string>());
 
+	
 
 private:
 	int m_Argc;

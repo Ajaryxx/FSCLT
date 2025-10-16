@@ -20,14 +20,15 @@ bool FSCLT::Run()
 		std::cerr << "Usage: fsclt [Command Flag] [ARG1] [ARG2] | [Command Flag] [ARG1] [ARG2] | ...\nFor example: fsclt print info all";
 		return false;
 	}
-	bool CanExecuteAll = Parse();
+	bool succes = Parse();
 
-	if (!CanExecuteAll)
+	if (!succes)
 		return false;
 
 	for (const auto& item : m_v_Commands)
 	{
-		item->Execute();
+		if (!item->Execute())
+			break;
 		
 		for (auto& item : m_v_TempCommandBuffer)
 		{
@@ -55,7 +56,8 @@ bool FSCLT::Parse()
 		}
 		else
 		{
-			std::cerr << "Couldn't find Command: [" << m_Argv[i] << "]\n";
+			ReportMessage("Couldn't find Command: [" + m_Argv[i] + "]\nCommands wont be executed!", MessageType::ERROR);
+			
 			return false;
 		}
 	}
@@ -96,12 +98,36 @@ BaseCommand* FSCLT::GetCommand(const std::string& name) const
 		BaseCommand* cmd = it->second(false, std::vector<std::string>());
 		return cmd;
 	}
-
 	return nullptr;
 }
 FSCLT& FSCLT::Get()
 {
 	return *fsclt;
+}
+void FSCLT::ReportMessage(const std::string& message, MessageType type)
+{
+	switch (type)
+	{
+		case MessageType::INFO:
+			std::cout << "\033[37m" << message << "\033[0m" << std::endl;
+			break;
+		case MessageType::WARNING:
+			std::cout << "\033[33m" << message << "\033[0m" << std::endl;
+			break;
+		case MessageType::ERROR:
+			std::cerr << "\033[31m" << message << "\033[0m" << std::endl;
+			break;
+		default:
+			break;
+	}
+	
+}
+void FSCLT::MakeNewLine(uint8_t n)
+{
+	for (uint8_t i = 0; i < n; i++)
+	{
+		std::cout << "\n";
+	}
 }
 void FSCLT::InitzializeCommands()
 {

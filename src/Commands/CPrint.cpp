@@ -18,13 +18,13 @@ fsclt print info command all -> [prints the usage info of all commands]
 fsclt prints info command [CommandName] -> [prints the Usage Info of [CommandName]])";
 }
 
-void CPrint::HandlePrintVersion(const std::vector<std::string>& UserArgs)
+bool CPrint::HandlePrintVersion(const std::vector<std::string>& UserArgs)
 {
 	std::cout << "version 0.1.0\n";
 	std::cout.flush();
-	
+	return true;
 }
-void CPrint::HandlePrintVersion2(const std::vector<std::string>& UserArgs)
+bool CPrint::HandlePrintVersion2(const std::vector<std::string>& UserArgs)
 {
 	for (const auto& item : UserArgs)
 	{
@@ -32,4 +32,5 @@ void CPrint::HandlePrintVersion2(const std::vector<std::string>& UserArgs)
 	}
 	std::cout.flush();
 	FSCLT::Get().GetAllCommands();
+	return true;
 }
