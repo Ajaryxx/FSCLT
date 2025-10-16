@@ -12,7 +12,7 @@ public:
 
 	
 	virtual void PrintUsageInfo() = 0;
-	virtual void Execute(const std::vector<std::string>& userArg = std::vector<std::string>());
+	virtual void Execute();
 
 protected:
 	void BindCommand(const std::vector<std::string>& pattern, std::function<void(const std::vector<std::string>& userArg)> func);

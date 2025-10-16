@@ -4,7 +4,7 @@
 CPrint::CPrint(const std::vector<std::string>& args) : BaseCommand(CMD_NAME, args)
 {
 	BIND_COMMAND(std::vector<std::string>({ "info", "version" }), HandlePrintVersion);
-	BIND_COMMAND(std::vector<std::string>({ "info", ARG_USERINP, "version", ARG_USERINP, ARG_USERINP, ARG_USERINP}), HandlePrintVersion2);
+	BIND_COMMAND(std::vector<std::string>({ "info", "version", ARG_USERINP}), HandlePrintVersion2);
 
 }
 
@@ -22,6 +22,7 @@ void CPrint::HandlePrintVersion(const std::vector<std::string>& UserArgs)
 {
 	std::cout << "version 0.1.0\n";
 	std::cout.flush();
+	
 }
 void CPrint::HandlePrintVersion2(const std::vector<std::string>& UserArgs)
 {
@@ -30,4 +31,5 @@ void CPrint::HandlePrintVersion2(const std::vector<std::string>& UserArgs)
 		std::cout << item << std::endl;
 	}
 	std::cout.flush();
+	FSCLT::Get().GetAllCommands();
 }

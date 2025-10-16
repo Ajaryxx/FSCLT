@@ -1,5 +1,6 @@
 #include "PCH.hpp"
 #include "FSCLT.hpp"
+#include "Commands/Commands.hpp"
 
 FSCLT* FSCLT::fsclt = nullptr;
 
@@ -7,8 +8,9 @@ FSCLT::FSCLT(int argc, const std::vector<std::string>& argv)
 {
 	this->m_Argc = argc;
 	this->m_Argv = argv;
-
 	fsclt = this;
+
+	InitzializeCommands();
 }
 
 bool FSCLT::Run()
@@ -37,7 +39,6 @@ bool FSCLT::Run()
 }
 bool FSCLT::Parse()
 {
-	std::vector<std::string> args_Vec;
 	//Jump over path to exe
 	for (size_t i = 1; i < m_Argc; i++)
 	{
@@ -101,4 +102,9 @@ BaseCommand* FSCLT::GetCommand(const std::string& name) const
 FSCLT& FSCLT::Get()
 {
 	return *fsclt;
+}
+void FSCLT::InitzializeCommands()
+{
+	//Print useful information like version or commands
+	DECLARE_COMMAND_FLAG("print", CPrint);
 }

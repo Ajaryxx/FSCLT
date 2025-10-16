@@ -7,19 +7,15 @@ void BaseCommand::PrintError()
 }
 void BaseCommand::BindCommand(const std::vector<std::string>& pattern, std::function<void(const std::vector<std::string>& userArg)> func)
 {
-	
 	for (size_t i = 0; i < m_v_CommandDispatch.size(); i++)
 	{
 		const std::vector<std::string>& strVec = m_v_CommandDispatch[i].first;
 		
 		assert(!(strVec == pattern) && "You cant bind a command with the same pattern");
-			
 	}
-
 	m_v_CommandDispatch.push_back(std::make_pair(pattern, func));
-	
 }
-void BaseCommand::Execute(const std::vector<std::string>& userArg)
+void BaseCommand::Execute()
 {
 	for (size_t i = 0; i < m_v_CommandDispatch.size(); i++)
 	{
@@ -35,6 +31,7 @@ void BaseCommand::Execute(const std::vector<std::string>& userArg)
 		{
 			if (strVec[j] == ARG_USERINP)
 			{
+				//Store user argument to the user args vector
 				UserArgs.push_back(m_v_args[j]);
 			}
 			else if (strVec[j] != m_v_args[j])
