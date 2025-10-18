@@ -12,7 +12,27 @@ FSCLT::FSCLT(int argc, const std::vector<std::string>& argv)
 
 	InitzializeCommands();
 }
-
+FSCLT::~FSCLT()
+{
+	if (!m_v_TempCommandBuffer.empty())
+	{
+		for (auto& item : m_v_TempCommandBuffer)
+		{
+			delete item;
+			item = nullptr;
+		}
+		m_v_TempCommandBuffer.clear();
+	}
+	if (!m_v_Commands.empty())
+	{
+		for (auto& item : m_v_Commands)
+		{
+			delete item;
+			item = nullptr;
+		}
+		m_v_Commands.clear();
+	}
+}
 bool FSCLT::Run()
 {
 	if (m_Argc == 1)
@@ -27,8 +47,13 @@ bool FSCLT::Run()
 
 	for (const auto& item : m_v_Commands)
 	{
+		FSCLT::Get().ReportMessage("Trying to execute: " + item->GetCommandFlag() + "...");
 		if (!item->Execute())
+		{
+			FSCLT::Get().ReportMessage("Failed to execute: " + item->GetCommandFlag());
 			break;
+		}
+		FSCLT::Get().ReportMessage("Execution successful: " + item->GetCommandFlag());
 		
 		for (auto& item : m_v_TempCommandBuffer)
 		{

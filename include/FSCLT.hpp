@@ -15,7 +15,7 @@ class FSCLT
 {
 public:
 	FSCLT(int argc, const std::vector<std::string>& argv);
-	~FSCLT() = default;
+	~FSCLT();
 
 	//returns false when fails, true when succses
 	bool Run();
@@ -27,7 +27,7 @@ public:
 	//Can return nullptr
 	BaseCommand* GetCommand(const std::string& name) const;
 
-	void ReportMessage(const std::string& message, MessageType type);
+	void ReportMessage(const std::string& message, MessageType type = MessageType::INFO);
 	void MakeNewLine(uint8_t n);
 private:
 	bool Parse();
@@ -37,8 +37,6 @@ private:
 	//Pushes the command to the temp or Command buffer
 	template<typename T>
 	BaseCommand* PushCommand(bool storeBuffer = true, const std::vector<std::string>& args = std::vector<std::string>());
-
-	
 
 private:
 	int m_Argc;

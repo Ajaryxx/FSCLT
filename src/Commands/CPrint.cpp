@@ -4,33 +4,60 @@
 CPrint::CPrint(const std::vector<std::string>& args) : BaseCommand(CMD_NAME, args)
 {
 	BIND_COMMAND(std::vector<std::string>({ "info", "version" }), HandlePrintVersion);
-	BIND_COMMAND(std::vector<std::string>({ "info", "version", ARG_USERINP}), HandlePrintVersion2);
-
+	BIND_COMMAND(std::vector<std::string>({ "info", "command", ARG_MULTIINP }), HandlePrintCommands);
+	BIND_COMMAND(std::vector<std::string>({ "list", "dir", ARG_MULTIINP}), HandlePrintDirectorys);
+	BIND_COMMAND(std::vector<std::string>({ "list", "file", ARG_MULTIINP }), HandlePrintFiles);
 }
 
 void CPrint::PrintUsageInfo()
 {
-	std::cout << R"(["PRINT"]
-Usage: 
-fsclt print version -> [prints Tool version]
-fsclt print help -> [prints usefull help]
-fsclt print info command all -> [prints the usage info of all commands]
-fsclt prints info command [CommandName] -> [prints the Usage Info of [CommandName]])";
+	FSCLT::Get().ReportMessage(R"(["PRINT"]
+Usage:
+fsclt print help ->[prints Tool version]
+fsclt print help ->[prints usefull help]
+fsclt print info command all ->[prints the usage info of all commands]
+fsclt prints info command[CommandName] ->[prints the Usage Info of[CommandName]]);)");
+
 }
 
 bool CPrint::HandlePrintVersion(const std::vector<std::string>& UserArgs)
 {
-	std::cout << "version 0.1.0\n";
-	std::cout.flush();
+	FSCLT::Get().ReportMessage("version 0.1.0");
+	
 	return true;
 }
-bool CPrint::HandlePrintVersion2(const std::vector<std::string>& UserArgs)
+bool CPrint::HandlePrintCommands(const std::vector<std::string>& UserArgs)
 {
-	for (const auto& item : UserArgs)
+	if (UserArgs.empty())
 	{
-		std::cout << item << std::endl;
+		for (const auto& item : FSCLT::Get().GetAllCommands())
+		{
+			item->PrintUsageInfo();
+		}
 	}
-	std::cout.flush();
-	FSCLT::Get().GetAllCommands();
+	else
+	{
+		for (const auto& item : UserArgs)
+		{
+			BaseCommand* cmd = FSCLT::Get().GetCommand(item);
+			if (cmd)
+			{
+				cmd->PrintUsageInfo();
+			}
+			else
+			{
+				FSCLT::Get().ReportMessage("Couldn't find Command: " + item, MessageType::ERROR);
+				return false;
+			}
+		}
+	}
+	return true;
+}
+bool CPrint::HandlePrintDirectorys(const std::vector<std::string>& UserArgs)
+{
+	return true;
+}
+bool CPrint::HandlePrintFiles(const std::vector<std::string>& UserArgs)
+{
 	return true;
 }

@@ -15,5 +15,8 @@ private:
 	void PrintUsageInfo() override;
 
 	bool HandlePrintVersion(const std::vector<std::string>& UserArgs);
-	bool HandlePrintVersion2(const std::vector<std::string>& UserArgs);
+	bool HandlePrintCommands(const std::vector<std::string>& UserArgs);
+	bool HandlePrintDirectorys(const std::vector<std::string>& UserArgs);
+	bool HandlePrintFiles(const std::vector<std::string>& UserArgs);
+	
 };
