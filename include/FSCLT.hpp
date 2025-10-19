@@ -29,6 +29,12 @@ public:
 
 	void ReportMessage(const std::string& message, MessageType type = MessageType::INFO);
 	void MakeNewLine(uint8_t n);
+	//Gets the path where fsclt is currenty executed
+	std::string GetExecutePath() const
+	{
+		//we want always know the current directory
+		return std::filesystem::current_path().u8string();
+	}
 private:
 	bool Parse();
 	std::vector<std::string> CatchArguments(size_t offset, size_t& newOffset);

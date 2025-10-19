@@ -12,7 +12,7 @@ int main(int argc, char* argv[])
 
 	FSCLT fsclt(argc, args);
 	bool result = fsclt.Run();
-
+	
 	if(!result)
 		return EXIT_FAILURE;
 

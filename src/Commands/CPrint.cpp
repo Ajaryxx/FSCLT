@@ -1,5 +1,8 @@
+#include "PCH.hpp"
 #include "Commands/CPrint.hpp"
 #include "FSCLT.hpp"
+
+namespace fs = std::filesystem;
 
 CPrint::CPrint(const std::vector<std::string>& args) : BaseCommand(CMD_NAME, args)
 {
@@ -55,6 +58,34 @@ bool CPrint::HandlePrintCommands(const std::vector<std::string>& UserArgs)
 }
 bool CPrint::HandlePrintDirectorys(const std::vector<std::string>& UserArgs)
 {
+	FSCLT& fsclt = FSCLT::Get();
+	fsclt.ReportMessage("There are following directorys: ");
+
+	if (UserArgs.empty())
+	{
+		for (const auto& item : fs::directory_iterator(fsclt.GetExecutePath()))
+		{
+			if(item.is_directory())
+			fsclt.ReportMessage(item.path().filename().u8string());
+		}
+	}
+	else
+	{
+		for (const auto& arg : UserArgs)
+		{
+			for (const auto& dirEntry : fs::directory_iterator(fsclt.GetExecutePath()))
+			{
+				if (dirEntry.is_regular_file())
+				{
+					if (dirEntry.path().extension() == arg)
+					{
+						fsclt.ReportMessage(dirEntry.path().filename().u8string());
+					}
+				}
+			}
+		}
+	}
+	
 	return true;
 }
 bool CPrint::HandlePrintFiles(const std::vector<std::string>& UserArgs)
