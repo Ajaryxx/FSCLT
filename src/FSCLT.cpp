@@ -47,13 +47,13 @@ bool FSCLT::Run()
 
 	for (const auto& item : m_v_Commands)
 	{
-		FSCLT::Get().ReportMessage("Trying to execute: " + item->GetCommandFlag() + "...");
+		FSCLT::Get().ReportMessage("Trying to execute: " + item->GetCommandFlag() + "...", MessageType::INFO, Color::CYAN);
 		if (!item->Execute())
 		{
-			FSCLT::Get().ReportMessage("Failed to execute: " + item->GetCommandFlag());
+			FSCLT::Get().ReportMessage("Failed to execute: " + item->GetCommandFlag(), MessageType::ERROR);
 			break;
 		}
-		FSCLT::Get().ReportMessage("Execution successful: " + item->GetCommandFlag());
+		FSCLT::Get().ReportMessage("Execution successful: " + item->GetCommandFlag(), MessageType::INFO, Color::GREEN);
 		
 		for (auto& item : m_v_TempCommandBuffer)
 		{
@@ -93,7 +93,7 @@ std::vector<std::string> FSCLT::CatchArguments(size_t offset, size_t& newOffset)
 	std::vector<std::string> args;
 	for (size_t i = offset; i < m_Argc; i++)
 	{
-		if (m_Argv[i] != "|")
+		if (m_Argv[i] != "AND")
 		{
 			args.push_back(m_Argv[i]);
 		}
@@ -129,23 +129,52 @@ FSCLT& FSCLT::Get()
 {
 	return *fsclt;
 }
-void FSCLT::ReportMessage(const std::string& message, MessageType type)
+void FSCLT::ReportMessage(std::string message, MessageType type, Color color)
 {
 	switch (type)
 	{
 		case MessageType::INFO:
-			std::cout << "\033[37m" << message << "\033[0m" << std::endl;
+			MessageColor(message, color);
+			std::cout <<  message << std::endl;
 			break;
 		case MessageType::WARNING:
-			std::cout << "\033[33m" << message << "\033[0m" << std::endl;
+			MessageColor(message, Color::YELLOW);
+			std::cout << message << std::endl;
 			break;
 		case MessageType::ERROR:
-			std::cerr << "\033[31m" << message << "\033[0m" << std::endl;
+			MessageColor(message, Color::RED);
+			std::cout << message << std::endl;
 			break;
 		default:
 			break;
 	}
-	
+}
+void FSCLT::MessageColor(std::string& str, Color color)
+{
+	switch (color)
+	{
+		case Color::WHITE:
+			str.insert(0, "\033[37m");
+			break;
+		case Color::RED:
+			str.insert(0, "\033[31m");
+			break;
+		case Color::GREEN:
+			str.insert(0, "\033[32m");
+			break;
+		case Color::BLUE:
+			str.insert(0, "\033[34m");
+			break;
+		case Color::CYAN:
+			str.insert(0, "\033[36m");
+			break;
+		case Color::YELLOW:
+			str.insert(0, "\033[33m");
+			break;
+		default:
+			break;
+	}
+	str.append("\033[0m");
 }
 void FSCLT::MakeNewLine(uint8_t n)
 {

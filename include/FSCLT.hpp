@@ -8,6 +8,15 @@ enum class MessageType : uint8_t
 	WARNING,
 	ERROR
 };
+enum class Color : uint8_t
+{
+	WHITE,
+	RED,
+	GREEN,
+	BLUE,
+	CYAN,
+	YELLOW,
+};
 
 class BaseCommand;
 
@@ -27,7 +36,9 @@ public:
 	//Can return nullptr
 	BaseCommand* GetCommand(const std::string& name) const;
 
-	void ReportMessage(const std::string& message, MessageType type = MessageType::INFO);
+	void ReportMessage(std::string message, MessageType type = MessageType::INFO, Color color = Color::WHITE);
+	void MessageColor(std::string& str, Color color);
+
 	void MakeNewLine(uint8_t n);
 	//Gets the path where fsclt is currenty executed
 	std::string GetExecutePath() const
