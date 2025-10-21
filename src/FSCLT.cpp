@@ -1,6 +1,7 @@
 #include "PCH.hpp"
 #include "FSCLT.hpp"
 #include "Commands/Commands.hpp"
+#include "OutputLog.hpp"
 
 FSCLT* FSCLT::fsclt = nullptr;
 
@@ -9,6 +10,7 @@ FSCLT::FSCLT(int argc, const std::vector<std::string>& argv)
 	this->m_Argc = argc;
 	this->m_Argv = argv;
 	fsclt = this;
+
 
 	InitzializeCommands();
 }
@@ -37,7 +39,7 @@ bool FSCLT::Run()
 {
 	if (m_Argc == 1)
 	{
-		std::cerr << "Usage: fsclt [Command Flag] [ARG1] [ARG2] | [Command Flag] [ARG1] [ARG2] | ...\nFor example: fsclt print info all";
+		std::cerr << "Usage: fsclt [Command Flag] [ARG1] [ARG2] AND [Command Flag] [ARG1] [ARG2] | ...\nFor example: fsclt print info all";
 		return false;
 	}
 	bool succes = Parse();
@@ -47,13 +49,14 @@ bool FSCLT::Run()
 
 	for (const auto& item : m_v_Commands)
 	{
-		FSCLT::Get().ReportMessage("Trying to execute: " + item->GetCommandFlag() + "...", MessageType::INFO, Color::CYAN);
+		OutputLog::Get().ReportStatus("Trying to execute: " + item->GetCommandFlag() + "...");
+	
 		if (!item->Execute())
 		{
-			FSCLT::Get().ReportMessage("Failed to execute: " + item->GetCommandFlag(), MessageType::ERROR);
+			OutputLog::Get().ReportStatus("Failed to execute: " + item->GetCommandFlag());
 			break;
 		}
-		FSCLT::Get().ReportMessage("Execution successful: " + item->GetCommandFlag(), MessageType::INFO, Color::GREEN);
+		OutputLog::Get().ReportStatus("Execution successful: " + item->GetCommandFlag());
 		
 		for (auto& item : m_v_TempCommandBuffer)
 		{
@@ -81,7 +84,7 @@ bool FSCLT::Parse()
 		}
 		else
 		{
-			ReportMessage("Couldn't find Command: [" + m_Argv[i] + "]\nCommands wont be executed!", MessageType::ERROR);
+			OutputLog::Get().ReportStatus("Couldn't find Command: [" + m_Argv[i] + "]\nCommands wont be executed!", MessageType::ERROR);
 			
 			return false;
 		}
@@ -129,60 +132,7 @@ FSCLT& FSCLT::Get()
 {
 	return *fsclt;
 }
-void FSCLT::ReportMessage(std::string message, MessageType type, Color color)
-{
-	switch (type)
-	{
-		case MessageType::INFO:
-			MessageColor(message, color);
-			std::cout <<  message << std::endl;
-			break;
-		case MessageType::WARNING:
-			MessageColor(message, Color::YELLOW);
-			std::cout << message << std::endl;
-			break;
-		case MessageType::ERROR:
-			MessageColor(message, Color::RED);
-			std::cout << message << std::endl;
-			break;
-		default:
-			break;
-	}
-}
-void FSCLT::MessageColor(std::string& str, Color color)
-{
-	switch (color)
-	{
-		case Color::WHITE:
-			str.insert(0, "\033[37m");
-			break;
-		case Color::RED:
-			str.insert(0, "\033[31m");
-			break;
-		case Color::GREEN:
-			str.insert(0, "\033[32m");
-			break;
-		case Color::BLUE:
-			str.insert(0, "\033[34m");
-			break;
-		case Color::CYAN:
-			str.insert(0, "\033[36m");
-			break;
-		case Color::YELLOW:
-			str.insert(0, "\033[33m");
-			break;
-		default:
-			break;
-	}
-	str.append("\033[0m");
-}
-void FSCLT::MakeNewLine(uint8_t n)
-{
-	for (uint8_t i = 0; i < n; i++)
-	{
-		std::cout << "\n";
-	}
-}
+
 void FSCLT::InitzializeCommands()
 {
 	//Print useful information like version or commands

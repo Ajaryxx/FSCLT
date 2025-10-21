@@ -2,22 +2,6 @@
 
 #define DECLARE_COMMAND_FLAG(CommandFlag, Class) DelcareCommand<Class>(CommandFlag)
 
-enum class MessageType : uint8_t
-{
-	INFO,
-	WARNING,
-	ERROR
-};
-enum class Color : uint8_t
-{
-	WHITE,
-	RED,
-	GREEN,
-	BLUE,
-	CYAN,
-	YELLOW,
-};
-
 class BaseCommand;
 
 class FSCLT
@@ -30,16 +14,13 @@ public:
 	bool Run();
 
 	static FSCLT& Get();
+	
 
 	const std::vector<BaseCommand*>& GetAllCommands() const;
 	
 	//Can return nullptr
 	BaseCommand* GetCommand(const std::string& name) const;
 
-	void ReportMessage(std::string message, MessageType type = MessageType::INFO, Color color = Color::WHITE);
-	void MessageColor(std::string& str, Color color);
-
-	void MakeNewLine(uint8_t n);
 	//Gets the path where fsclt is currenty executed
 	std::string GetExecutePath() const
 	{
@@ -47,6 +28,7 @@ public:
 		return std::filesystem::current_path().u8string();
 	}
 private:
+	
 	bool Parse();
 	std::vector<std::string> CatchArguments(size_t offset, size_t& newOffset);
 
@@ -60,7 +42,7 @@ private:
 	std::vector<std::string> m_Argv;
 	
 	static FSCLT* fsclt;
-	
+
 	//Commads stored to execute it later
 	std::vector<BaseCommand*> m_v_Commands;
 	//Commands stored which will be deleted after the last Command execution 

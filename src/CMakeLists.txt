@@ -1,4 +1,6 @@
 target_sources(${PROJ_EXE} PRIVATE 
-"FSCLT.cpp")
+"FSCLT.cpp"
+"OutputLog.cpp"
+)
 
 add_subdirectory(Commands)
