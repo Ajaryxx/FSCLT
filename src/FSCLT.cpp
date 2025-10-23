@@ -49,14 +49,14 @@ bool FSCLT::Run()
 
 	for (const auto& item : m_v_Commands)
 	{
-		OutputLog::Get().ReportStatus("Trying to execute: " + item->GetCommandFlag() + "...");
+		OutputLog::Get().ReportStatus("Trying to execute: " + item->GetCommandFlag() + "...", MessageType::INFO, 1);
 	
 		if (!item->Execute())
 		{
-			OutputLog::Get().ReportStatus("Failed to execute: " + item->GetCommandFlag());
+			OutputLog::Get().ReportStatus("Failed to execute: " + item->GetCommandFlag(), MessageType::ERROR, 1);
 			break;
 		}
-		OutputLog::Get().ReportStatus("Execution successful: " + item->GetCommandFlag());
+		OutputLog::Get().ReportStatus("Execution successful: " + item->GetCommandFlag(), MessageType::INFO, 1);
 		
 		for (auto& item : m_v_TempCommandBuffer)
 		{
@@ -71,13 +71,13 @@ bool FSCLT::Parse()
 	//Jump over path to exe
 	for (size_t i = 1; i < m_Argc; i++)
 	{
-		auto& it = m_um_CommandFlags.find(m_Argv[i]);
+		auto it = m_um_CommandFlags.find(m_Argv[i]);
 
 		if (it != m_um_CommandFlags.end())
 		{
 			size_t newOffset;
 			//Jump over current string(Command string)
-			std::vector<std::string>& buffer = CatchArguments(i + 1, newOffset);
+			std::vector<std::string> buffer = CatchArguments(i + 1, newOffset);
 			//Stores the Command to the vector buffer so we can execute it later
 			it->second(true, buffer);
 			i += newOffset;
@@ -119,7 +119,7 @@ const std::vector<BaseCommand*>& FSCLT::GetAllCommands() const
 }
 BaseCommand* FSCLT::GetCommand(const std::string& name) const
 {
-	auto& it = m_um_CommandFlags.find(name);
+	auto it = m_um_CommandFlags.find(name);
 
 	if (it != m_um_CommandFlags.end())
 	{

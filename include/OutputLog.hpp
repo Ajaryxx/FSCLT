@@ -17,6 +17,13 @@ enum class MessageType : uint8_t
 	WARNING,
 	ERROR
 };
+enum class ConvertUnit
+{
+	KILOBYTE,
+	MEGABYTE,
+	GIGABYTE,
+	TERABYTE,
+};
 
 class OutputLog
 {
@@ -26,17 +33,22 @@ public:
 	{
 		return *m_OutputLog;
 	}
-
+	//For sending a normal message. For e.g to output Filenames
 	void SendMessage(const std::string& message, uint8_t newLines = 0, Color color = Color::WHITE);
+	//For sending a status message. For e.g status of a running command
 	void ReportStatus(const std::string& message, MessageType messageType = MessageType::INFO, uint8_t newLines = 0);
+	void PrintDirFileInfoVec(const std::vector<std::filesystem::path> buffer);
 	void SetSpace(uint8_t newLines);
 	void SetConsoleColor(Color color);
+	uintmax_t GetFolderSize(const std::filesystem::path& folderPath) const;
+
+	uintmax_t ConvertFileDirSize(uintmax_t size, ConvertUnit unit);
 
 	//default color is white
 	void ResetConsoleColor();
 private:
 	std::string GetMessageTypeString(MessageType messageType);
-	
+	std::string GetFileDirTime(const std::filesystem::path& patht);
 
 	OutputLog();
 	~OutputLog() = default;

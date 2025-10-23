@@ -15,13 +15,14 @@ CPrint::CPrint(const std::vector<std::string>& args) : BaseCommand(CMD_NAME, arg
 
 void CPrint::PrintUsageInfo()
 {
-	OutputLog::Get().ReportStatus(R"(["PRINT"]
+	OutputLog::Get().SendMessage(R"(["PRINT"]
 Usage:
-fsclt print help ->[prints Tool version]
-fsclt print help ->[prints usefull help]
-fsclt print info command all ->[prints the usage info of all commands]
-fsclt prints info command[CommandName] ->[prints the Usage Info of[CommandName]]);)");
-
+fsclt print info version -> [prints Tool version]
+fsclt print info command [COMMAND_NAMES] -> [prints usage help for command]
+fsclt print list dir [EXTENSION] -> [lists all diretorys with a speficic extension]
+fsclt prints list file [EXTENSION] ->[prints all files with a spefific extension])", 
+1, 
+Color::CYAN);
 }
 
 bool CPrint::HandlePrintVersion(const std::vector<std::string>& UserArgs)
@@ -62,7 +63,8 @@ bool CPrint::HandlePrintCommands(const std::vector<std::string>& UserArgs)
 }
 bool CPrint::HandlePrintDirectorys(const std::vector<std::string>& UserArgs)
 {
-	bool FoundDirecorys = false;
+
+	std::vector<fs::path> buffer;
 
 	OutputLog::Get().ReportStatus("There are following directorys: ");
 
@@ -70,8 +72,10 @@ bool CPrint::HandlePrintDirectorys(const std::vector<std::string>& UserArgs)
 	{
 		for (const auto& item : fs::directory_iterator(FSCLT::Get().GetExecutePath()))
 		{
-			if (item.is_directory());
-			OutputLog::Get().SendMessage(item.path().filename().u8string());
+			if (item.is_directory())
+			{
+				buffer.push_back(item);
+			}
 		}
 	}
 	else
@@ -84,14 +88,16 @@ bool CPrint::HandlePrintDirectorys(const std::vector<std::string>& UserArgs)
 				{
 					if (dirEntry.path().extension() == arg)
 					{
-						OutputLog::Get().SendMessage(dirEntry.path().filename().u8string());
+						buffer.push_back(dirEntry);
 					}
 				}
 			}
 		}
 	}
-	if (!FoundDirecorys)
+	if (buffer.empty())
 		OutputLog::Get().SendMessage("No direcorys found", 0, Color::CYAN);
+	else
+		OutputLog::Get().PrintDirFileInfoVec(buffer);
 
 	return true;
 }

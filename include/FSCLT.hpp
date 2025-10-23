@@ -25,7 +25,7 @@ public:
 	std::string GetExecutePath() const
 	{
 		//we want always know the current directory
-		return std::filesystem::current_path().u8string();
+		return std::filesystem::current_path().string();
 	}
 private:
 	

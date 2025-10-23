@@ -1,6 +1,7 @@
 #include "PCH.hpp"
 #include "OutputLog.hpp"
 
+namespace fs = std::filesystem;
 
 OutputLog::OutputLog()
 {
@@ -67,6 +68,77 @@ std::string OutputLog::GetMessageTypeString(MessageType messageType)
 	}
 
 	return msgStr;
+}
+
+void OutputLog::PrintDirFileInfoVec(const std::vector<std::filesystem::path> buffer)
+{
+	size_t counter = 0;
+	for (const auto& item : buffer)
+	{
+		SendMessage("Name: " + item.filename().string());
+
+		const std::string TimeStr = GetFileDirTime(item);
+		SendMessage("Date modified: " + TimeStr);
+
+		std::string ext = item.extension().string();
+		if(ext.empty())
+			SendMessage("Type: Folder");
+		else
+			SendMessage("Type: " + ext);
+		
+		uintmax_t fileSize = GetFolderSize(item);
+		double a = ConvertFileDirSize(fileSize, ConvertUnit::MEGABYTE);
+		SendMessage("Size: " + std::to_string(a));
+
+		counter++;
+	}
+	
+}
+std::string OutputLog::GetFileDirTime(const fs::path& path)
+{
+	auto timeCast = std::chrono::clock_cast<std::chrono::system_clock, std::chrono::file_clock>(fs::last_write_time(path));
+
+	std::time_t time = std::chrono::system_clock::to_time_t(timeCast);
+
+	char* cTime = std::asctime(std::localtime(&time));
+	if (!cTime)
+	{
+		ReportStatus("Couldn't convert time to string", MessageType::ERROR);
+		return std::string("[UNDEFINED]");
+	}
+	std::string timeStr(cTime);
+	timeStr.pop_back();
+	return timeStr;
+}
+uintmax_t OutputLog::GetFolderSize(const std::filesystem::path& folderPath) const
+{
+	uintmax_t size = 0;
+	for (const auto& item : fs::recursive_directory_iterator(folderPath))
+	{
+		size += item.file_size();
+	}
+	return size;
+}
+
+uintmax_t OutputLog::ConvertFileDirSize(uintmax_t size, ConvertUnit unit)
+{
+	uintmax_t convertedUnit = 0.f;
+	switch (unit)
+	{
+	case ConvertUnit::KILOBYTE:
+		convertedUnit = size / 1024;
+		break;
+	case ConvertUnit::MEGABYTE:
+		convertedUnit = size / 1048576;
+		break;
+	case ConvertUnit::GIGABYTE:
+		break;
+	case ConvertUnit::TERABYTE:
+		break;
+	default:
+		break;
+	}
+	return convertedUnit;
 }
 void OutputLog::ResetConsoleColor()
 {
