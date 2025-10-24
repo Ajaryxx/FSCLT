@@ -39,20 +39,19 @@ bool BaseCommand::Execute()
 
 bool BaseCommand::CheckEqualCommand(const std::vector<std::string>& pattern, std::vector<std::string>& userArgs)
 {
-	std::vector<std::string> UserArgs;
 	size_t i;
 	for (i = 0; i < pattern.size(); i++)
 	{
 		if (pattern[i] == ARG_MULTIINP)
 		{
-			UserArgs.insert(UserArgs.end(), m_v_args.begin() + i, m_v_args.end());
+			userArgs.insert(userArgs.end(), m_v_args.begin() + i, m_v_args.end());
 			i += m_v_args.size();
 			break;
 		}
 		else if (pattern[i] == ARG_USERINP)
 		{
 			//Store user argument to the user args vector
-			UserArgs.push_back(m_v_args[i]);
+			userArgs.push_back(m_v_args[i]);
 		}
 		else if (pattern[i] != m_v_args[i])
 		{
@@ -60,7 +59,6 @@ bool BaseCommand::CheckEqualCommand(const std::vector<std::string>& pattern, std
 		}
 	}
 	
-	userArgs = UserArgs;
 	return i >= m_v_args.size();
 }
 void BaseCommand::ReportInvalidCommand()

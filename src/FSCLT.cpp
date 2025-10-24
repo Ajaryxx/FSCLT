@@ -54,6 +54,7 @@ bool FSCLT::Run()
 		if (!item->Execute())
 		{
 			OutputLog::Get().ReportStatus("Failed to execute: " + item->GetCommandFlag(), MessageType::ERROR, 1);
+			succes = false;
 			break;
 		}
 		OutputLog::Get().ReportStatus("Execution successful: " + item->GetCommandFlag(), MessageType::INFO, 1);
@@ -65,6 +66,8 @@ bool FSCLT::Run()
 		}
 		m_v_TempCommandBuffer.clear();
 	}
+
+	return succes;
 }
 bool FSCLT::Parse()
 {

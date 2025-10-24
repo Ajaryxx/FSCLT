@@ -151,15 +151,13 @@ std::string OutputLog::ConvertFileDirSize(uintmax_t bytes, ConvertUnit unit)
 		convertedUnit = CalculateAutoSizeUnit(bytes, unitStr);
 		break;
 	default:
-		ReportStatus("Invalid unit specified. Returning in bytes", MessageType::WARNING, 1);
+		ReportStatus("Invalid unit specified. Returning in bytes.", MessageType::WARNING, 1);
 		convertedUnit = bytes;
 		break;
 	}
 	
 	convertedUnit = round(convertedUnit * 100.f) / 100.f;
-	std::string CalcResult = std::to_string(convertedUnit).append(unitStr);
-
-	return CalcResult;
+	return  std::to_string(convertedUnit).append(unitStr);
 }
 double OutputLog::CalculateAutoSizeUnit(uintmax_t bytes, std::string& unitStr)
 {
@@ -263,7 +261,7 @@ std::string OutputLog::CheckElementType(const fs::path& element) const
 	{
 		return "Folder";
 	}
-	if (fs::is_regular_file(element))
+	else
 	{
 		return element.extension().string();
 	}

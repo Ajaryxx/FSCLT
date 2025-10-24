@@ -8,7 +8,7 @@ constexpr const char* ARG_MULTIINP = "@MULTI_INPUT@";
 class BaseCommand
 {
 public:
-	BaseCommand(const std::string& const commandName, const std::vector<std::string>& args) : m_v_args(args), m_CommandName(commandName) { }
+	BaseCommand(const std::string& commandName, const std::vector<std::string>& args) : m_v_args(args), m_CommandName(commandName) { }
 	virtual ~BaseCommand() = default;
 
 	inline std::string GetCommandFlag() const
