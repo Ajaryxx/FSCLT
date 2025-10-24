@@ -66,11 +66,13 @@ bool CPrint::HandlePrintDirectorys(const std::vector<std::string>& UserArgs)
 
 	std::vector<fs::path> buffer;
 
+	std::string ExecutePath = FSCLT::Get().GetExecutePath();
+	//ExecutePath = "C:\\Program Files";
 	OutputLog::Get().ReportStatus("There are following directorys: ");
 
 	if (UserArgs.empty())
 	{
-		for (const auto& item : fs::directory_iterator(FSCLT::Get().GetExecutePath()))
+		for (const auto& item : fs::directory_iterator(ExecutePath))
 		{
 			if (item.is_directory())
 			{
@@ -82,7 +84,7 @@ bool CPrint::HandlePrintDirectorys(const std::vector<std::string>& UserArgs)
 	{
 		for (const auto& arg : UserArgs)
 		{
-			for (const auto& dirEntry : fs::directory_iterator(FSCLT::Get().GetExecutePath()))
+			for (const auto& dirEntry : fs::directory_iterator(ExecutePath))
 			{
 				if (dirEntry.is_regular_file())
 				{
@@ -97,7 +99,7 @@ bool CPrint::HandlePrintDirectorys(const std::vector<std::string>& UserArgs)
 	if (buffer.empty())
 		OutputLog::Get().SendMessage("No direcorys found", 0, Color::CYAN);
 	else
-		OutputLog::Get().PrintDirFileInfoVec(buffer);
+		OutputLog::Get().PrintDirInfo(buffer);
 
 	return true;
 }
