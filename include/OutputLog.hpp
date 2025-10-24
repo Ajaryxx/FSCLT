@@ -39,7 +39,8 @@ public:
 	void SendMessage(const std::string& message, uint8_t newLines = 0, Color color = Color::WHITE);
 	//For sending a status message. For e.g status of a running command
 	void ReportStatus(const std::string& message, MessageType messageType = MessageType::INFO, uint8_t newLines = 0);
-	void PrintDirInfo(const std::vector<std::filesystem::path> buffer);
+	void PrintDirInfo(const std::vector<std::filesystem::path>& dirPaths);
+	void PrintDirInfo(const std::filesystem::path& dirPath);
 	void SetSpace(uint8_t newLines);
 	void SetConsoleColor(Color color);
 	uintmax_t GetFolderSize(const std::filesystem::path& folderPath);

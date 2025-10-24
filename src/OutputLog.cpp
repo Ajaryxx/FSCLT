@@ -36,6 +36,8 @@ void OutputLog::ReportStatus(const std::string& message, MessageType messageType
 		std::cerr << msgStr << std::endl;
 		break;
 	default:
+		SetConsoleColor(Color::MAGENTA);
+		std::cerr << msgStr << std::endl;
 		break;
 	}
 
@@ -63,13 +65,14 @@ std::string OutputLog::GetMessageTypeString(MessageType messageType)
 		msgStr = "[ERROR]: ";
 		break;
 	default:
+		msgStr = "[UNDEFIEND STATUS]: ";
 		break;
 	}
 
 	return msgStr;
 }
 
-void OutputLog::PrintDirInfo(const std::vector<std::filesystem::path> dirPaths)
+void OutputLog::PrintDirInfo(const std::vector<std::filesystem::path>& dirPaths)
 {
 	for (const auto& item : dirPaths)
 	{
@@ -86,11 +89,24 @@ void OutputLog::PrintDirInfo(const std::vector<std::filesystem::path> dirPaths)
 	}
 	
 }
+void OutputLog::PrintDirInfo(const std::filesystem::path& dirPath)
+{
+	SendMessage("Name: " + dirPath.filename().string());
+
+	const std::string TimeStr = GetFileDirTime(dirPath);
+	SendMessage("Date modified: " + TimeStr);
+
+	SendMessage("Type: " + CheckElementType(dirPath));
+
+	SendMessage("Size: " + GetElementSize(dirPath));
+
+	SetSpace(2);
+}
 std::string OutputLog::GetFileDirTime(const fs::path& path)
 {
 	auto timeCast = std::chrono::clock_cast<std::chrono::system_clock, std::chrono::file_clock>(fs::last_write_time(path));
 
-	std::time_t time = std::chrono::system_clock::to_time_t(timeCast);
+	const std::time_t time = std::chrono::system_clock::to_time_t(timeCast);
 
 	char* cTime = std::asctime(std::localtime(&time));
 	if (!cTime)
@@ -268,7 +284,7 @@ std::string OutputLog::CheckElementType(const fs::path& element) const
 }
 std::string OutputLog::GetElementSize(const std::filesystem::path& element, ConvertUnit unit)
 {
-	uintmax_t fileSize = GetFolderSize(element);
+	const uintmax_t fileSize = GetFolderSize(element);
 	std::string convertedUnit = ConvertFileDirSize(fileSize, unit);
 	RemoveZeros(convertedUnit);
 
