@@ -85,7 +85,9 @@ void OutputLog::PrintDirInfo(const std::vector<std::filesystem::path>& dirPaths)
 		
 		SendMessage("Size: " + GetElementSize(item));
 
-		SetSpace(2);
+		SetSpace(1);
+		SendMessage("-------------------------------------------", 0);
+		SetSpace(1);
 	}
 	
 }
@@ -142,7 +144,7 @@ uintmax_t OutputLog::GetFolderSize(const std::filesystem::path& folderPath)
 std::string OutputLog::ConvertFileDirSize(uintmax_t bytes, ConvertUnit unit)
 {
 	double convertedUnit = 0.f;
-	double sizef = static_cast<float>(bytes);
+	double sizef = static_cast<double>(bytes);
 	std::string unitStr;
 
 	switch (unit)

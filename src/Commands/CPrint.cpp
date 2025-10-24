@@ -9,8 +9,12 @@ CPrint::CPrint(const std::vector<std::string>& args) : BaseCommand(CMD_NAME, arg
 {
 	BIND_COMMAND(std::vector<std::string>({ "info", "version" }), HandlePrintVersion);
 	BIND_COMMAND(std::vector<std::string>({ "info", "command", ARG_MULTIINP }), HandlePrintCommands);
-	BIND_COMMAND(std::vector<std::string>({ "list", "dir", ARG_MULTIINP}), HandlePrintDirectorys);
-	BIND_COMMAND(std::vector<std::string>({ "list", "file", ARG_MULTIINP }), HandlePrintFiles);
+
+	BIND_COMMAND(std::vector<std::string>({ "info", "dir", ARG_MULTIINP }), HandlePrintInfoDirectory);
+	BIND_COMMAND(std::vector<std::string>({ "info", "file", ARG_MULTIINP }), HandlePrintInfoFile);
+
+	BIND_COMMAND(std::vector<std::string>({ "list", "dir", ARG_MULTIINP}), HandlePrintListDirectorys);
+	BIND_COMMAND(std::vector<std::string>({ "list", "file", ARG_MULTIINP }), HandlePrintListFiles);
 }
 
 void CPrint::PrintUsageInfo()
@@ -61,49 +65,70 @@ bool CPrint::HandlePrintCommands(const std::vector<std::string>& UserArgs)
 	}
 	return true;
 }
-bool CPrint::HandlePrintDirectorys(const std::vector<std::string>& UserArgs)
+bool CPrint::HandlePrintListDirectorys(const std::vector<std::string>& UserArgs)
 {
-
 	std::vector<fs::path> buffer;
-
-	std::string ExecutePath = FSCLT::Get().GetExecutePath();
-	//ExecutePath = "C:\\Program Files";
+	const std::string ExecutePath = FSCLT::Get().GetExecutePath();
 	OutputLog::Get().ReportStatus("There are following directorys: ");
 
-	if (UserArgs.empty())
+	bool succses = true;
+	try
 	{
-		for (const auto& item : fs::directory_iterator(ExecutePath))
+		if (UserArgs.empty())
 		{
-			if (item.is_directory())
+			for (const auto& item : fs::directory_iterator(ExecutePath))
 			{
-				buffer.push_back(item);
+				if (item.is_directory())
+					buffer.push_back(item);
+				
 			}
 		}
-	}
-	else
-	{
-		for (const auto& arg : UserArgs)
+		else
 		{
-			for (const auto& dirEntry : fs::directory_iterator(ExecutePath))
+			for (const auto& arg : UserArgs)
 			{
-				if (dirEntry.is_regular_file())
+				bool found = false;
+				for (const auto& element : fs::directory_iterator(ExecutePath))
 				{
-					if (dirEntry.path().extension() == arg)
+					if (element.is_directory() && element.path().filename() == arg)
 					{
-						buffer.push_back(dirEntry);
+						buffer.push_back(element);
+						found = true;
 					}
+					
 				}
+				if (!found)
+				{
+					OutputLog::Get().ReportStatus("Couldn't find directory: " + arg, MessageType::ERROR, 1);
+					succses = false;
+				}
+					
 			}
 		}
+		
 	}
+	catch (const fs::filesystem_error& err)
+	{
+		OutputLog::Get().ReportStatus("ERROR: " + std::string(err.what()), MessageType::ERROR);
+		succses = false;
+	}
+
 	if (buffer.empty())
-		OutputLog::Get().SendMessage("No direcorys found", 0, Color::CYAN);
+		OutputLog::Get().SendMessage("No directories found", 0, Color::CYAN);
 	else
 		OutputLog::Get().PrintDirInfo(buffer);
 
+	return succses;
+}
+bool CPrint::HandlePrintListFiles(const std::vector<std::string>& UserArgs)
+{
 	return true;
 }
-bool CPrint::HandlePrintFiles(const std::vector<std::string>& UserArgs)
+bool CPrint::HandlePrintInfoDirectory(const std::vector<std::string>& UserArgs)
+{
+	return true;
+}
+bool CPrint::HandlePrintInfoFile(const std::vector<std::string>& UserArgs)
 {
 	return true;
 }

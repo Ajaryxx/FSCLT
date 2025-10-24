@@ -16,8 +16,12 @@ private:
 
 	bool HandlePrintVersion(const std::vector<std::string>& UserArgs);
 	bool HandlePrintCommands(const std::vector<std::string>& UserArgs);
-	bool HandlePrintDirectorys(const std::vector<std::string>& UserArgs);
-	bool HandlePrintFiles(const std::vector<std::string>& UserArgs);
+
+	bool HandlePrintListDirectorys(const std::vector<std::string>& UserArgs);
+	bool HandlePrintListFiles(const std::vector<std::string>& UserArgs);
+
+	bool HandlePrintInfoDirectory(const std::vector<std::string>& UserArgs);
+	bool HandlePrintInfoFile(const std::vector<std::string>& UserArgs);
 	
 
 };
