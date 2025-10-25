@@ -13,7 +13,7 @@ CPrint::CPrint(const std::vector<std::string>& args) : BaseCommand(CMD_NAME, arg
 	BIND_COMMAND(std::vector<std::string>({ "info", "dir", ARG_MULTIINP }), HandlePrintInfoDirectory);
 	BIND_COMMAND(std::vector<std::string>({ "info", "file", ARG_MULTIINP }), HandlePrintInfoFile);
 
-	BIND_COMMAND(std::vector<std::string>({ "list", "dir", ARG_MULTIINP}), HandlePrintListDirectorys);
+	BIND_COMMAND(std::vector<std::string>({ "list", "dir"}), HandlePrintListDirectorys);
 	BIND_COMMAND(std::vector<std::string>({ "list", "file", ARG_MULTIINP }), HandlePrintListFiles);
 }
 
@@ -74,38 +74,11 @@ bool CPrint::HandlePrintListDirectorys(const std::vector<std::string>& UserArgs)
 	bool succses = true;
 	try
 	{
-		if (UserArgs.empty())
+		for (const auto& item : fs::directory_iterator(ExecutePath))
 		{
-			for (const auto& item : fs::directory_iterator(ExecutePath))
-			{
-				if (item.is_directory())
-					buffer.push_back(item);
-				
-			}
+			if (item.is_directory())
+				buffer.push_back(item);
 		}
-		else
-		{
-			for (const auto& arg : UserArgs)
-			{
-				bool found = false;
-				for (const auto& element : fs::directory_iterator(ExecutePath))
-				{
-					if (element.is_directory() && element.path().filename() == arg)
-					{
-						buffer.push_back(element);
-						found = true;
-					}
-					
-				}
-				if (!found)
-				{
-					OutputLog::Get().ReportStatus("Couldn't find directory: " + arg, MessageType::ERROR, 1);
-					succses = false;
-				}
-					
-			}
-		}
-		
 	}
 	catch (const fs::filesystem_error& err)
 	{

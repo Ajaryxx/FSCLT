@@ -39,7 +39,7 @@ bool FSCLT::Run()
 {
 	if (m_Argc == 1)
 	{
-		std::cerr << "Usage: fsclt [Command Flag] [ARG1] [ARG2] AND [Command Flag] [ARG1] [ARG2] | ...\nFor example: fsclt print info all";
+		OutputLog::Get().ReportStatus("Usage: fsclt [Command Flag] [ARG1] [ARG2] AND [Command Flag] [ARG1] [ARG2] | ...\nFor example: fsclt print info all");
 		return false;
 	}
 	bool succes = Parse();
