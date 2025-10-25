@@ -44,8 +44,10 @@ public:
 	void SetSpace(uint8_t newLines);
 	void SetConsoleColor(Color color);
 	uintmax_t GetFolderSize(const std::filesystem::path& folderPath);
+
 	//Converts dir/file size in a specified unit
 	std::string ConvertFileDirSize(uintmax_t bytes, ConvertUnit unit);
+
 	//Detects the best unit for dir/file size
 	double CalculateAutoSizeUnit(uintmax_t bytes, std::string& unitStr);
 
@@ -57,8 +59,11 @@ private:
 	std::string GetMessageTypeString(MessageType messageType);
 	//returns the modifiy time of this file
 	std::string GetFileDirTime(const std::filesystem::path& patht);
-	//returns wether its a directoy or file
+
+/*If its a Folder it returns "Folder"
+If its a File it returns the extension of this file*/
 	std::string CheckElementType(const std::filesystem::path& element) const;
+
 	//Gets the size for this file/dir and converts it to a string
 	std::string GetElementSize(const std::filesystem::path& element, ConvertUnit unit = ConvertUnit::AUTO);
 	void RemoveZeros(std::string& str);
