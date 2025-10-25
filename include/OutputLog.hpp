@@ -23,7 +23,7 @@ enum class ConvertUnit
 	MEGABYTE,
 	GIGABYTE,
 	TERABYTE,
-	//auto detect best unit
+	//auto detect best unit to cenvert
 	AUTO
 };
 
