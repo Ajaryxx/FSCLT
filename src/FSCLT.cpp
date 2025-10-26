@@ -53,7 +53,7 @@ bool FSCLT::Run()
 	
 		if (!item->Execute())
 		{
-			OutputLog::Get().ReportStatus("Failed to execute: " + item->GetCommandFlag(), MessageType::ERROR, 1);
+			OutputLog::Get().ReportStatus("Failed to execute: " + item->GetCommandFlag(), MessageType::EERROR, 1);
 			succes = false;
 			break;
 		}
@@ -87,7 +87,7 @@ bool FSCLT::Parse()
 		}
 		else
 		{
-			OutputLog::Get().ReportStatus("Couldn't find Command: [" + m_Argv[i] + "]\nCommands wont be executed!", MessageType::ERROR);
+			OutputLog::Get().ReportStatus("Couldn't find Command: [" + m_Argv[i] + "]\nCommands wont be executed!", MessageType::EERROR);
 			
 			return false;
 		}

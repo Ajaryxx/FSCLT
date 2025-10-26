@@ -68,5 +68,5 @@ void BaseCommand::ReportInvalidCommand()
 	for (const auto& item : m_v_args)
 		errorString.append(item + " ");
 
-	OutputLog::Get().ReportStatus(errorString, MessageType::ERROR);
+	OutputLog::Get().ReportStatus(errorString, MessageType::EERROR);
 }

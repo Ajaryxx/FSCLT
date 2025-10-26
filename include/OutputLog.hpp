@@ -15,7 +15,7 @@ enum class MessageType : uint8_t
 {
 	INFO,
 	WARNING,
-	ERROR
+	EERROR
 };
 enum class ConvertUnit
 {
@@ -42,11 +42,13 @@ public:
 	void PrintDirInfo(const std::vector<std::filesystem::path>& dirPaths);
 	void PrintDirInfo(const std::filesystem::path& dirPath);
 	void SetSpace(uint8_t newLines);
+	void Seperate();
 	void SetConsoleColor(Color color);
+	void CountFolderAndFiles(const std::filesystem::path& path, uint32_t& fileCount, uint32_t& folderCount) const;
 	uintmax_t GetFolderSize(const std::filesystem::path& folderPath);
 
-	//Converts dir/file size in a specified unit
-	std::string ConvertFileDirSize(uintmax_t bytes, ConvertUnit unit);
+	//Converts bytes to a specific unit
+	std::string ConvertBytesToUnit(uintmax_t bytes, ConvertUnit unit);
 
 	//Detects the best unit for dir/file size
 	double CalculateAutoSizeUnit(uintmax_t bytes, std::string& unitStr);

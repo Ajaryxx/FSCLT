@@ -59,7 +59,7 @@ bool CPrint::HandlePrintCommands(const std::vector<std::string>& UserArgs)
 			}
 			else
 			{
-				OutputLog::Get().ReportStatus("Couldn't find Command: " + item, MessageType::ERROR);
+				OutputLog::Get().ReportStatus("Couldn't find Command: " + item, MessageType::EERROR);
 				return false;
 			}
 		}
@@ -70,8 +70,11 @@ bool CPrint::HandlePrintListDirectorys(const std::vector<std::string>& UserArgs)
 {
 	std::vector<fs::path> buffer;
 	std::string ExecutePath = FSCLT::Get().GetExecutePath();
-	ExecutePath = "C:\\Users\\joelf\\Pictures";
-	OutputLog::Get().ReportStatus("There are following directorys: ");
+	ExecutePath = "C:\\Users\\joelf\\Documents";
+
+	OutputLog& log = OutputLog::Get();
+	log.ReportStatus("There are following directorys: ");
+	log.Seperate();
 
 	bool succses = true;
 	try
@@ -88,33 +91,33 @@ bool CPrint::HandlePrintListDirectorys(const std::vector<std::string>& UserArgs)
 		{
 			for (const auto& arg : UserArgs)
 			{
-				const fs::path dir = DirecoryExists(arg, ExecutePath);
+				const fs::path dir = DoesExists(arg, ExecutePath);
 				if (!dir.empty())
 					buffer.push_back(dir);
 				else
-					OutputLog::Get().ReportStatus("Couldn't find directory with name: \"" + arg + "\" in directory: " + ExecutePath, MessageType::WARNING, 1);
+					log.ReportStatus("Couldn't find directory with name: \"" + arg + "\" in directory: " + ExecutePath, MessageType::WARNING, 1);
 			}
 		}
 		
 	}
 	catch (const fs::filesystem_error& err)
 	{
-		OutputLog::Get().ReportStatus("ERROR: " + std::string(err.what()), MessageType::ERROR);
+		log.ReportStatus("ERROR: " + std::string(err.what()), MessageType::EERROR);
 		succses = false;
 	}
 
 	if (buffer.empty())
-		OutputLog::Get().SendMessage("No directories found", 0, Color::CYAN);
+		log.SendMessage("No directories found", 0, Color::CYAN);
 	else
-		OutputLog::Get().PrintDirInfo(buffer);
+		log.PrintDirInfo(buffer);
 
 	return succses;
 }
-std::filesystem::path CPrint::DirecoryExists(const std::string dirName, const std::filesystem::path& executePath) const
+std::filesystem::path CPrint::DoesExists(const std::string name, const std::filesystem::path& fullPath) const
 {
-	for (const auto& dir : fs::directory_iterator(executePath))
+	for (const auto& dir : fs::directory_iterator(fullPath))
 	{
-		fs::path dirPath = dir.path().parent_path().append(dirName);
+		fs::path dirPath = dir.path().parent_path().append(name);
 		if (fs::exists(dirPath))
 		{
 			return dirPath;

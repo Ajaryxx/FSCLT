@@ -31,7 +31,7 @@ void OutputLog::ReportStatus(const std::string& message, MessageType messageType
 		SetConsoleColor(Color::YELLOW);
 		std::cout << msgStr << std::endl;
 		break;
-	case MessageType::ERROR:
+	case MessageType::EERROR:
 		SetConsoleColor(Color::RED);
 		std::cerr << msgStr << std::endl;
 		break;
@@ -43,6 +43,12 @@ void OutputLog::ReportStatus(const std::string& message, MessageType messageType
 
 	ResetConsoleColor();
 	SetSpace(newLines);
+}
+void OutputLog::Seperate()
+{
+	SetSpace(1);
+	SendMessage("-------------------------------");
+	SetSpace(1);
 }
 void OutputLog::SetSpace(uint8_t newLines)
 {
@@ -61,7 +67,7 @@ std::string OutputLog::GetMessageTypeString(MessageType messageType)
 	case MessageType::WARNING:
 		msgStr = "[WARNING]: ";
 		break;
-	case MessageType::ERROR:
+	case MessageType::EERROR:
 		msgStr = "[ERROR]: ";
 		break;
 	default:
@@ -85,9 +91,13 @@ void OutputLog::PrintDirInfo(const std::vector<std::filesystem::path>& dirPaths)
 		
 		SendMessage("Size: " + GetElementSize(item));
 
-		SetSpace(1);
-		SendMessage("-------------------------------------------", 0);
-		SetSpace(1);
+		uint32_t FolderCount;
+		uint32_t FileCount;
+		CountFolderAndFiles(item, FileCount, FolderCount);
+		SendMessage("Folder Count: " + std::to_string(FolderCount).append("\n") +
+			"File Count: " + std::to_string(FileCount));
+
+		Seperate();
 	}
 	
 }
@@ -102,7 +112,13 @@ void OutputLog::PrintDirInfo(const std::filesystem::path& dirPath)
 
 	SendMessage("Size: " + GetElementSize(dirPath));
 
-	SetSpace(2);
+	uint32_t FolderCount;
+	uint32_t FileCount;
+	CountFolderAndFiles(dirPath, FileCount, FolderCount);
+	SendMessage("Folder Count: " + std::to_string(FolderCount).append("\n") +
+	"File Count: " + std::to_string(FileCount));
+
+	Seperate();
 }
 std::string OutputLog::GetFileDirTime(const fs::path& path)
 {
@@ -113,7 +129,7 @@ std::string OutputLog::GetFileDirTime(const fs::path& path)
 	char* cTime = std::asctime(std::localtime(&time));
 	if (!cTime)
 	{
-		ReportStatus("Couldn't convert time to string", MessageType::ERROR);
+		ReportStatus("Couldn't convert time to string", MessageType::EERROR);
 		return std::string("[UNDEFINED]");
 	}
 
@@ -136,13 +152,28 @@ uintmax_t OutputLog::GetFolderSize(const std::filesystem::path& folderPath)
 	}
 	catch (const fs::filesystem_error& err)
 	{
-		ReportStatus("ERROR: " + std::string(err.what()), MessageType::ERROR, 1);
+		ReportStatus("ERROR: " + std::string(err.what()), MessageType::EERROR, 1);
 	}
 	
 	return 0;
 }
-std::string OutputLog::ConvertFileDirSize(uintmax_t bytes, ConvertUnit unit)
+void OutputLog::CountFolderAndFiles(const fs::path& path, uint32_t& fileCount, uint32_t& folderCount) const
 {
+	uint32_t FolderCount = 0;
+	uint32_t FilesCount = 0;
+	for (const auto& item : fs::recursive_directory_iterator(path, fs::directory_options::skip_permission_denied))
+	{
+		if (item.is_directory())
+			FolderCount++;
+		else
+			FilesCount++;
+	}
+
+	fileCount = FilesCount;;
+	folderCount = FolderCount;
+}
+std::string OutputLog::ConvertBytesToUnit(uintmax_t bytes, ConvertUnit unit)
+{	
 	double convertedUnit = 0.f;
 	double sizef = static_cast<double>(bytes);
 	std::string unitStr;
@@ -151,19 +182,19 @@ std::string OutputLog::ConvertFileDirSize(uintmax_t bytes, ConvertUnit unit)
 	{
 	case ConvertUnit::KILOBYTE:
 		convertedUnit = sizef / pow(1024, 1);
-		unitStr = "KB";
+		unitStr = "KiB";
 		break;
 	case ConvertUnit::MEGABYTE:
 		convertedUnit = sizef / pow(1024, 2);
-		unitStr = "MB";
+		unitStr = "MiB";
 		break;
 	case ConvertUnit::GIGABYTE:
 		convertedUnit = sizef / pow(1024, 3);
-		unitStr = "GB";
+		unitStr = "GiB";
 		break;
 	case ConvertUnit::TERABYTE:
 		convertedUnit = sizef / pow(1024, 4);
-		unitStr = "TB";
+		unitStr = "TiB";
 		break;
 	case ConvertUnit::AUTO:
 		convertedUnit = CalculateAutoSizeUnit(bytes, unitStr);
@@ -175,13 +206,13 @@ std::string OutputLog::ConvertFileDirSize(uintmax_t bytes, ConvertUnit unit)
 	}
 	
 	convertedUnit = round(convertedUnit * 100.f) / 100.f;
-	return  std::to_string(convertedUnit).append(unitStr);
+	return std::to_string(convertedUnit).append(" ").append(unitStr);
 }
 double OutputLog::CalculateAutoSizeUnit(uintmax_t bytes, std::string& unitStr)
 {
 	double convertedUnit = 0;
 	double sizef = static_cast<float>(bytes);
-
+	
 	if (InRange(bytes, 0, pow(1024, 1)))
 	{
 		//byte
@@ -192,32 +223,32 @@ double OutputLog::CalculateAutoSizeUnit(uintmax_t bytes, std::string& unitStr)
 	{
 		//kilobyte
 		convertedUnit = sizef / pow(1024, 1);
-		unitStr = "KB";
+		unitStr = "KiB";
 	}
 	else if (InRange(bytes, pow(1024, 2), pow(1024, 3)))
 	{
 		//megabyte
 		convertedUnit = sizef / pow(1024, 2);
-		unitStr = "MB";
+		unitStr = "MiB";
 	}
 	else if (InRange(bytes, pow(1024, 3), pow(1024, 4)))
 	{
 		//gigabyte
 		convertedUnit = sizef / pow(1024, 3);
-		unitStr = "GB";
+		unitStr = "GiB";
 	}
 	else
 	{
 		//terabyte
 		convertedUnit = sizef / pow(1024, 4);
-		unitStr = "TB";
+		unitStr = "TiB";
 	}
 	return convertedUnit;
 }
 void OutputLog::RemoveZeros(std::string& str)
 {
 	size_t pos = str.find('.');
-	//jump over num befroe the dot
+	//jump over num before the dot
 	pos += 2;
 
 	for (auto it = str.begin() + pos; it != str.end();)
@@ -287,7 +318,7 @@ std::string OutputLog::CheckElementType(const fs::path& element) const
 std::string OutputLog::GetElementSize(const std::filesystem::path& element, ConvertUnit unit)
 {
 	const uintmax_t fileSize = GetFolderSize(element);
-	std::string convertedUnit = ConvertFileDirSize(fileSize, unit);
+	std::string convertedUnit = ConvertBytesToUnit(fileSize, unit);
 	RemoveZeros(convertedUnit);
 
 	return convertedUnit;
