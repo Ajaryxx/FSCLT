@@ -89,13 +89,16 @@ void OutputLog::PrintDirInfo(const std::vector<std::filesystem::path>& dirPaths)
 
 		SendMessage("Type: " + CheckElementType(item));
 		
-		SendMessage("Size: " + GetElementSize(item));
+		uintmax_t FolderSize = GetFolderSize(item);
+		std::string ConvFolderSize = ConvertBytesToUnit(FolderSize, ConvertUnit::AUTO);
+		SendMessage("Size: " + ConvFolderSize);
 
+		
 		uint32_t FolderCount;
 		uint32_t FileCount;
 		CountFolderAndFiles(item, FileCount, FolderCount);
 		SendMessage("Folder Count: " + std::to_string(FolderCount).append("\n") +
-			"File Count: " + std::to_string(FileCount));
+				"File Count: " + std::to_string(FileCount));
 
 		Seperate();
 	}
@@ -110,13 +113,48 @@ void OutputLog::PrintDirInfo(const std::filesystem::path& dirPath)
 
 	SendMessage("Type: " + CheckElementType(dirPath));
 
-	SendMessage("Size: " + GetElementSize(dirPath));
+	uintmax_t FolderSize = GetFolderSize(dirPath);
+	std::string ConvFolderSize = ConvertBytesToUnit(FolderSize, ConvertUnit::AUTO);
+	SendMessage("Size: " + ConvFolderSize);
 
 	uint32_t FolderCount;
 	uint32_t FileCount;
 	CountFolderAndFiles(dirPath, FileCount, FolderCount);
 	SendMessage("Folder Count: " + std::to_string(FolderCount).append("\n") +
 	"File Count: " + std::to_string(FileCount));
+
+	Seperate();
+}
+void OutputLog::PrintFileInfo(const std::vector<std::filesystem::path>& filePaths)
+{
+	for (const auto& item : filePaths)
+	{
+		SendMessage("Name: " + item.filename().string());
+
+		const std::string TimeStr = GetFileDirTime(item);
+		SendMessage("Date modified: " + TimeStr);
+
+		SendMessage("Type: " + CheckElementType(item));
+
+		SendMessage("Size: " + GetElementSize(item));
+
+
+		Seperate();
+	}
+
+	
+}
+void OutputLog::PrintFileInfo(const std::filesystem::path& filePath)
+{
+
+	SendMessage("Name: " + filePath.filename().string());
+
+	const std::string TimeStr = GetFileDirTime(filePath);
+	SendMessage("Date modified: " + TimeStr);
+
+	SendMessage("Type: " + CheckElementType(filePath));
+
+	SendMessage("Size: " + GetElementSize(filePath));
 
 	Seperate();
 }
@@ -157,18 +195,27 @@ uintmax_t OutputLog::GetFolderSize(const std::filesystem::path& folderPath)
 	
 	return 0;
 }
-void OutputLog::CountFolderAndFiles(const fs::path& path, uint32_t& fileCount, uint32_t& folderCount) const
+void OutputLog::CountFolderAndFiles(const fs::path& path, uint32_t& fileCount, uint32_t& folderCount)
 {
+	
 	uint32_t FolderCount = 0;
 	uint32_t FilesCount = 0;
-	for (const auto& item : fs::recursive_directory_iterator(path, fs::directory_options::skip_permission_denied))
+	try
 	{
-		if (item.is_directory())
-			FolderCount++;
-		else
-			FilesCount++;
-	}
+		for (const auto& item : fs::recursive_directory_iterator(path, fs::directory_options::skip_permission_denied))
+		{
+			if (item.is_directory())
+				FolderCount++;
+			else
+				FilesCount++;
+		}
 
+	}
+	catch (const fs::filesystem_error& err)
+	{
+		ReportStatus("ERROR: " + std::string(err.what()), MessageType::EERROR, 1);
+	}
+	
 	fileCount = FilesCount;;
 	folderCount = FolderCount;
 }
@@ -206,7 +253,9 @@ std::string OutputLog::ConvertBytesToUnit(uintmax_t bytes, ConvertUnit unit)
 	}
 	
 	convertedUnit = round(convertedUnit * 100.f) / 100.f;
-	return std::to_string(convertedUnit).append(" ").append(unitStr);
+	std::string strConvertUnit = std::to_string(convertedUnit).append(" ").append(unitStr);
+	RemoveZeros(strConvertUnit);
+	return strConvertUnit;
 }
 double OutputLog::CalculateAutoSizeUnit(uintmax_t bytes, std::string& unitStr)
 {
@@ -217,7 +266,7 @@ double OutputLog::CalculateAutoSizeUnit(uintmax_t bytes, std::string& unitStr)
 	{
 		//byte
 		convertedUnit = sizef;
-		unitStr = "BYTE";
+		unitStr = "BYTES";
 	}
 	else if (InRange(bytes, pow(1024, 1), pow(1024, 2)))
 	{
@@ -317,7 +366,7 @@ std::string OutputLog::CheckElementType(const fs::path& element) const
 }
 std::string OutputLog::GetElementSize(const std::filesystem::path& element, ConvertUnit unit)
 {
-	const uintmax_t fileSize = GetFolderSize(element);
+	const uintmax_t fileSize = fs::file_size(element);
 	std::string convertedUnit = ConvertBytesToUnit(fileSize, unit);
 	RemoveZeros(convertedUnit);
 

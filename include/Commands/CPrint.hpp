@@ -25,4 +25,7 @@ private:
 	
 	//Returns the path if the path was found or it returns an empty string if not 
 	std::filesystem::path DoesExists(const std::string dirName, const std::filesystem::path& fullPath) const;
+	//returns all found files with a specific extension
+	//NOTE: PLEASE MAKE SURE THE AT A DOT IN FORNT
+	std::vector<std::filesystem::path> CheckFileExtInDir(const std::filesystem::path& dir, const std::string& ext) const;
 };

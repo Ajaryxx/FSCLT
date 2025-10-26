@@ -78,7 +78,7 @@ bool CPrint::HandlePrintListDirectorys(const std::vector<std::string>& UserArgs)
 
 	bool succses = true;
 	try
-	{
+	{	//print all dirs
 		if (UserArgs.empty())
 		{
 			for (const auto& item : fs::directory_iterator(ExecutePath))
@@ -89,6 +89,7 @@ bool CPrint::HandlePrintListDirectorys(const std::vector<std::string>& UserArgs)
 		}
 		else
 		{
+
 			for (const auto& arg : UserArgs)
 			{
 				const fs::path dir = DoesExists(arg, ExecutePath);
@@ -125,10 +126,67 @@ std::filesystem::path CPrint::DoesExists(const std::string name, const std::file
 	}
 	return fs::path();
 }
+
 bool CPrint::HandlePrintListFiles(const std::vector<std::string>& UserArgs)
 {
-	return true;
+	std::vector<fs::path> buffer;
+	std::string ExecutePath = FSCLT::Get().GetExecutePath();
+	ExecutePath = "C:\\Users\\joelf\\Pictures";
+
+	OutputLog& log = OutputLog::Get();
+	log.ReportStatus("There are following files in this directory: ");
+	log.Seperate();
+
+	bool succses = true;
+	try
+	{
+		//print all files
+		if (UserArgs.empty())
+		{
+			for (const auto& item : fs::directory_iterator(ExecutePath))
+			{
+				if (item.is_regular_file())
+					buffer.push_back(item);
+			}
+		}
+		else
+		{
+			//print specific files
+			for (const auto& arg : UserArgs)
+			{
+				std::vector<fs::path> foundFiles = CheckFileExtInDir(ExecutePath, arg);
+				std::copy(foundFiles.begin(), foundFiles.end(), std::back_inserter(buffer));
+			
+			}
+		}
+
+	}
+	catch (const fs::filesystem_error& err)
+	{
+		log.ReportStatus("ERROR: " + std::string(err.what()), MessageType::EERROR);
+		succses = false;
+	}
+
+	if (buffer.empty())
+		log.SendMessage("No files found", 1, Color::CYAN);
+	else
+		log.PrintFileInfo(buffer);
+
+	return succses;
 }
+std::vector<fs::path> CPrint::CheckFileExtInDir(const std::filesystem::path& dir, const std::string& ext) const
+{
+	std::vector<fs::path> buffer;
+	for (const auto& item : fs::directory_iterator(dir))
+	{
+		if (item.path().extension().string() == ext)
+		{
+			buffer.push_back(item);	
+		}
+	}
+	return buffer;
+}
+
 bool CPrint::HandlePrintInfoDirectory(const std::vector<std::string>& UserArgs)
 {
 	return true;

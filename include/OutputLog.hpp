@@ -41,10 +41,14 @@ public:
 	void ReportStatus(const std::string& message, MessageType messageType = MessageType::INFO, uint8_t newLines = 0);
 	void PrintDirInfo(const std::vector<std::filesystem::path>& dirPaths);
 	void PrintDirInfo(const std::filesystem::path& dirPath);
+
+	void PrintFileInfo(const std::vector<std::filesystem::path>& filePaths);
+	void PrintFileInfo(const std::filesystem::path& filePath);
+
 	void SetSpace(uint8_t newLines);
 	void Seperate();
 	void SetConsoleColor(Color color);
-	void CountFolderAndFiles(const std::filesystem::path& path, uint32_t& fileCount, uint32_t& folderCount) const;
+	void CountFolderAndFiles(const std::filesystem::path& path, uint32_t& fileCount, uint32_t& folderCount);
 	uintmax_t GetFolderSize(const std::filesystem::path& folderPath);
 
 	//Converts bytes to a specific unit
@@ -66,7 +70,7 @@ private:
 If its a File it returns the extension of this file*/
 	std::string CheckElementType(const std::filesystem::path& element) const;
 
-	//Gets the size for this file/dir and converts it to a string
+	//Gets the size for this file and returns it as a string
 	std::string GetElementSize(const std::filesystem::path& element, ConvertUnit unit = ConvertUnit::AUTO);
 	void RemoveZeros(std::string& str);
 
