@@ -15,7 +15,11 @@ set(PROJ_EXE "FSCLT")
 
 
 add_executable(${PROJ_EXE} "src/main.cpp")
-target_include_directories(${PROJ_EXE} PRIVATE "include/")
+target_include_directories(${PROJ_EXE} PRIVATE "include/" ${CMAKE_BINARY_DIR}/config)
 target_precompile_headers(${PROJ_EXE} PRIVATE "include/PCH.hpp")
+
+configure_file("include/config.hpp.in"
+${CMAKE_BINARY_DIR}/config/config.hpp ESCAPE_QUOTES
+)
 
 add_subdirectory(src)

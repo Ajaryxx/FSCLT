@@ -2,6 +2,7 @@
 #include "Commands/CPrint.hpp"
 #include "FSCLT.hpp"
 #include "OutputLog.hpp"
+#include "config.hpp"
 
 namespace fs = std::filesystem;
 
@@ -13,7 +14,7 @@ CPrint::CPrint(const std::vector<std::string>& args) : BaseCommand(CMD_NAME, arg
 	BIND_COMMAND(std::vector<std::string>({ "info", "dir", ARG_MULTIINP }), HandlePrintInfoDirectory);
 	BIND_COMMAND(std::vector<std::string>({ "info", "file", ARG_MULTIINP }), HandlePrintInfoFile);
 
-	BIND_COMMAND(std::vector<std::string>({ "list", "dir"}), HandlePrintListDirectorys);
+	BIND_COMMAND(std::vector<std::string>({ "list", "dir", ARG_MULTIINP }), HandlePrintListDirectorys);
 	BIND_COMMAND(std::vector<std::string>({ "list", "file", ARG_MULTIINP }), HandlePrintListFiles);
 }
 
@@ -31,7 +32,7 @@ Color::CYAN);
 
 bool CPrint::HandlePrintVersion(const std::vector<std::string>& UserArgs)
 {
-	//FSCLT::Get().ReportMessage("version 0.1.0");
+	OutputLog::Get().SendMessage(TOOL_VERSION, 1);
 	
 	return true;
 }
@@ -68,17 +69,33 @@ bool CPrint::HandlePrintCommands(const std::vector<std::string>& UserArgs)
 bool CPrint::HandlePrintListDirectorys(const std::vector<std::string>& UserArgs)
 {
 	std::vector<fs::path> buffer;
-	const std::string ExecutePath = FSCLT::Get().GetExecutePath();
+	std::string ExecutePath = FSCLT::Get().GetExecutePath();
+	ExecutePath = "C:\\Users\\joelf\\Pictures";
 	OutputLog::Get().ReportStatus("There are following directorys: ");
 
 	bool succses = true;
 	try
 	{
-		for (const auto& item : fs::directory_iterator(ExecutePath))
+		if (UserArgs.empty())
 		{
-			if (item.is_directory())
-				buffer.push_back(item);
+			for (const auto& item : fs::directory_iterator(ExecutePath))
+			{
+				if (item.is_directory())
+					buffer.push_back(item);
+			}
 		}
+		else
+		{
+			for (const auto& arg : UserArgs)
+			{
+				const fs::path dir = DirecoryExists(arg, ExecutePath);
+				if (!dir.empty())
+					buffer.push_back(dir);
+				else
+					OutputLog::Get().ReportStatus("Couldn't find directory with name: \"" + arg + "\" in directory: " + ExecutePath, MessageType::WARNING, 1);
+			}
+		}
+		
 	}
 	catch (const fs::filesystem_error& err)
 	{
@@ -92,6 +109,18 @@ bool CPrint::HandlePrintListDirectorys(const std::vector<std::string>& UserArgs)
 		OutputLog::Get().PrintDirInfo(buffer);
 
 	return succses;
+}
+std::filesystem::path CPrint::DirecoryExists(const std::string dirName, const std::filesystem::path& executePath) const
+{
+	for (const auto& dir : fs::directory_iterator(executePath))
+	{
+		fs::path dirPath = dir.path().parent_path().append(dirName);
+		if (fs::exists(dirPath))
+		{
+			return dirPath;
+		}
+	}
+	return fs::path();
 }
 bool CPrint::HandlePrintListFiles(const std::vector<std::string>& UserArgs)
 {

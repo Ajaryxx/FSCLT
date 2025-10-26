@@ -1,0 +1,4 @@
+#pragma once
+#include <iostream>
+
+const std::string TOOL_VERSION = "Version: @PROJECT_VERSION@";
