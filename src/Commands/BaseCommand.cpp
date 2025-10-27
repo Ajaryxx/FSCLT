@@ -44,6 +44,7 @@ bool BaseCommand::CheckEqualCommand(const std::vector<std::string>& pattern, std
 	{
 		if (pattern[i] == ARG_MULTIINP)
 		{
+			//get all args until end of vec
 			userArgs.insert(userArgs.end(), m_v_args.begin() + i, m_v_args.end());
 			i += m_v_args.size();
 			break;

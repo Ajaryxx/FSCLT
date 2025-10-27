@@ -39,11 +39,8 @@ public:
 	void SendMessage(const std::string& message, uint8_t newLines = 0, Color color = Color::WHITE);
 	//For sending a status message. For e.g status of a running command
 	void ReportStatus(const std::string& message, MessageType messageType = MessageType::INFO, uint8_t newLines = 0);
-	void PrintDirInfo(const std::vector<std::filesystem::path>& dirPaths);
+	void PrintDirListInfo(const std::vector<std::filesystem::path>& dirPaths);
 	void PrintDirInfo(const std::filesystem::path& dirPath);
-
-	void PrintFileInfo(const std::vector<std::filesystem::path>& filePaths);
-	void PrintFileInfo(const std::filesystem::path& filePath);
 
 	void SetSpace(uint8_t newLines);
 	void Seperate();
@@ -64,13 +61,13 @@ public:
 private:
 	std::string GetMessageTypeString(MessageType messageType);
 	//returns the modifiy time of this file
-	std::string GetFileDirTime(const std::filesystem::path& patht);
+	std::string GetModifyTime(const std::filesystem::path& patht);
 
 /*If its a Folder it returns "Folder"
 If its a File it returns the extension of this file*/
 	std::string CheckElementType(const std::filesystem::path& element) const;
 
-	//Gets the size for this file and returns it as a string
+	//Gets the size for this file or folder and returns it as a string
 	std::string GetElementSize(const std::filesystem::path& element, ConvertUnit unit = ConvertUnit::AUTO);
 	void RemoveZeros(std::string& str);
 

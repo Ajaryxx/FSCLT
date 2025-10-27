@@ -78,87 +78,39 @@ std::string OutputLog::GetMessageTypeString(MessageType messageType)
 	return msgStr;
 }
 
-void OutputLog::PrintDirInfo(const std::vector<std::filesystem::path>& dirPaths)
+void OutputLog::PrintDirListInfo(const std::vector<std::filesystem::path>& dirPaths)
 {
 	for (const auto& item : dirPaths)
 	{
 		SendMessage("Name: " + item.filename().string());
 
-		const std::string TimeStr = GetFileDirTime(item);
+		const std::string TimeStr = GetModifyTime(item);
 		SendMessage("Date modified: " + TimeStr);
 
 		SendMessage("Type: " + CheckElementType(item));
 		
-		uintmax_t FolderSize = GetFolderSize(item);
-		std::string ConvFolderSize = ConvertBytesToUnit(FolderSize, ConvertUnit::AUTO);
-		SendMessage("Size: " + ConvFolderSize);
+		if (fs::is_directory(item))
+		{
+			//Folder size
+			SendMessage("Size: " + GetElementSize(item));
 
-		
-		uint32_t FolderCount;
-		uint32_t FileCount;
-		CountFolderAndFiles(item, FileCount, FolderCount);
-		SendMessage("Folder Count: " + std::to_string(FolderCount).append("\n") +
+			//Count files
+			uint32_t FolderCount;
+			uint32_t FileCount;
+			CountFolderAndFiles(item, FileCount, FolderCount);
+			SendMessage("Folder Count: " + std::to_string(FolderCount).append("\n") +
 				"File Count: " + std::to_string(FileCount));
-
+		}
+		else
+		{
+			SendMessage("Size: " + GetElementSize(item));
+		}
+		
 		Seperate();
 	}
 	
 }
-void OutputLog::PrintDirInfo(const std::filesystem::path& dirPath)
-{
-	SendMessage("Name: " + dirPath.filename().string());
-
-	const std::string TimeStr = GetFileDirTime(dirPath);
-	SendMessage("Date modified: " + TimeStr);
-
-	SendMessage("Type: " + CheckElementType(dirPath));
-
-	uintmax_t FolderSize = GetFolderSize(dirPath);
-	std::string ConvFolderSize = ConvertBytesToUnit(FolderSize, ConvertUnit::AUTO);
-	SendMessage("Size: " + ConvFolderSize);
-
-	uint32_t FolderCount;
-	uint32_t FileCount;
-	CountFolderAndFiles(dirPath, FileCount, FolderCount);
-	SendMessage("Folder Count: " + std::to_string(FolderCount).append("\n") +
-	"File Count: " + std::to_string(FileCount));
-
-	Seperate();
-}
-void OutputLog::PrintFileInfo(const std::vector<std::filesystem::path>& filePaths)
-{
-	for (const auto& item : filePaths)
-	{
-		SendMessage("Name: " + item.filename().string());
-
-		const std::string TimeStr = GetFileDirTime(item);
-		SendMessage("Date modified: " + TimeStr);
-
-		SendMessage("Type: " + CheckElementType(item));
-
-		SendMessage("Size: " + GetElementSize(item));
-
-
-		Seperate();
-	}
-
-	
-}
-void OutputLog::PrintFileInfo(const std::filesystem::path& filePath)
-{
-
-	SendMessage("Name: " + filePath.filename().string());
-
-	const std::string TimeStr = GetFileDirTime(filePath);
-	SendMessage("Date modified: " + TimeStr);
-
-	SendMessage("Type: " + CheckElementType(filePath));
-
-	SendMessage("Size: " + GetElementSize(filePath));
-
-	Seperate();
-}
-std::string OutputLog::GetFileDirTime(const fs::path& path)
+std::string OutputLog::GetModifyTime(const fs::path& path)
 {
 	auto timeCast = std::chrono::clock_cast<std::chrono::system_clock, std::chrono::file_clock>(fs::last_write_time(path));
 
@@ -202,7 +154,7 @@ void OutputLog::CountFolderAndFiles(const fs::path& path, uint32_t& fileCount, u
 	uint32_t FilesCount = 0;
 	try
 	{
-		for (const auto& item : fs::recursive_directory_iterator(path, fs::directory_options::skip_permission_denied))
+		for (const auto& item : fs::recursive_directory_iterator(path))
 		{
 			if (item.is_directory())
 				FolderCount++;
@@ -366,8 +318,18 @@ std::string OutputLog::CheckElementType(const fs::path& element) const
 }
 std::string OutputLog::GetElementSize(const std::filesystem::path& element, ConvertUnit unit)
 {
-	const uintmax_t fileSize = fs::file_size(element);
-	std::string convertedUnit = ConvertBytesToUnit(fileSize, unit);
+	std::string convertedUnit;
+	uintmax_t SizeBytes;
+
+	if (fs::is_directory(element))
+	{
+		SizeBytes = GetFolderSize(element);
+	}
+	else
+	{
+		SizeBytes = fs::file_size(element);
+	}
+	convertedUnit = ConvertBytesToUnit(SizeBytes, unit);
 	RemoveZeros(convertedUnit);
 
 	return convertedUnit;

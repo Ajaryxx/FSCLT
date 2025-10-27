@@ -14,7 +14,7 @@ CPrint::CPrint(const std::vector<std::string>& args) : BaseCommand(CMD_NAME, arg
 	BIND_COMMAND(std::vector<std::string>({ "info", "dir", ARG_MULTIINP }), HandlePrintInfoDirectory);
 	BIND_COMMAND(std::vector<std::string>({ "info", "file", ARG_MULTIINP }), HandlePrintInfoFile);
 
-	BIND_COMMAND(std::vector<std::string>({ "list", "dir", ARG_MULTIINP }), HandlePrintListDirectorys);
+	BIND_COMMAND(std::vector<std::string>({ "list", "dir" }), HandlePrintListDirectorys);
 	BIND_COMMAND(std::vector<std::string>({ "list", "file", ARG_MULTIINP }), HandlePrintListFiles);
 }
 
@@ -70,10 +70,9 @@ bool CPrint::HandlePrintListDirectorys(const std::vector<std::string>& UserArgs)
 {
 	std::vector<fs::path> buffer;
 	std::string ExecutePath = FSCLT::Get().GetExecutePath();
-	ExecutePath = "C:\\Users\\joelf\\Documents";
 
 	OutputLog& log = OutputLog::Get();
-	log.ReportStatus("There are following directorys: ");
+	log.ReportStatus("There are following files or directorys: ");
 	log.Seperate();
 
 	bool succses = true;
@@ -83,23 +82,9 @@ bool CPrint::HandlePrintListDirectorys(const std::vector<std::string>& UserArgs)
 		{
 			for (const auto& item : fs::directory_iterator(ExecutePath))
 			{
-				if (item.is_directory())
-					buffer.push_back(item);
+				buffer.push_back(item);
 			}
-		}
-		else
-		{
-
-			for (const auto& arg : UserArgs)
-			{
-				const fs::path dir = DoesExists(arg, ExecutePath);
-				if (!dir.empty())
-					buffer.push_back(dir);
-				else
-					log.ReportStatus("Couldn't find directory with name: \"" + arg + "\" in directory: " + ExecutePath, MessageType::WARNING, 1);
-			}
-		}
-		
+		}	
 	}
 	catch (const fs::filesystem_error& err)
 	{
@@ -108,9 +93,9 @@ bool CPrint::HandlePrintListDirectorys(const std::vector<std::string>& UserArgs)
 	}
 
 	if (buffer.empty())
-		log.SendMessage("No directories found", 0, Color::CYAN);
+		log.SendMessage("No directories or files found", 0, Color::CYAN);
 	else
-		log.PrintDirInfo(buffer);
+		log.PrintDirListInfo(buffer);
 
 	return succses;
 }
@@ -170,7 +155,7 @@ bool CPrint::HandlePrintListFiles(const std::vector<std::string>& UserArgs)
 	if (buffer.empty())
 		log.SendMessage("No files found", 1, Color::CYAN);
 	else
-		log.PrintFileInfo(buffer);
+		log.PrintDirListInfo(buffer);
 
 	return succses;
 }
