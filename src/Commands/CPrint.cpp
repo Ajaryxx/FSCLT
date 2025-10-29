@@ -87,7 +87,7 @@ bool CPrint::HandlePrintListDirectory(const std::vector<std::string>& UserArgs)
 	{
 		for (const auto& item : fs::directory_iterator(FSCLT::Get().GetExecutePath()))
 		{
-			log.SendMessage(FormatHelper.FormatDirectoryInfo(std::vector<fs::path>({ item })));
+			log.SendMessage(FormatHelper.FormatDirectoryInfo(item));
 		}
 	}
 	catch (const fs::filesystem_error& err)

@@ -19,6 +19,8 @@ public:
 	}
 	//returns the info as a string
 	std::string FormatDirectoryInfo(const std::vector<std::filesystem::path>& vec);
+	//returns the info as a string
+	std::string FormatDirectoryInfo(const std::filesystem::path& path);
 
 	//returns the modifiy time of this dir/file
 	std::string GetModifyTime(const std::filesystem::path& path);

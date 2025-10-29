@@ -34,6 +34,27 @@ std::string FilesystemFormatHelper::FormatDirectoryInfo(const std::vector<std::f
 
 	return outStr;
 }
+std::string FilesystemFormatHelper::FormatDirectoryInfo(const std::filesystem::path& path)
+{
+	std::string outStr;
+
+	outStr.append("Name: " + path.filename().string()).push_back('\n');
+	outStr.append("Date modifieds: " + GetModifyTime(path)).push_back('\n');
+	outStr.append("Type: " + GetElementType(path)).push_back('\n');
+
+	if (fs::is_directory(path))
+	{
+		uint32_t fileCount, folderCount;
+		CountFolderElements(path, folderCount, fileCount);
+		outStr.append("Folder count: " + std::to_string(folderCount)).push_back('\n');
+		outStr.append("File count: " + std::to_string(fileCount)).push_back('\n');
+	}
+	outStr.append("Size: " + GetElementSize(path)).push_back('\n');
+
+	OutputLog::Get().Seperate();
+
+	return outStr;
+}
 //get the size of thise Element
 std::string FilesystemFormatHelper::GetElementSize(const std::filesystem::path& dir, ConvertUnit unit)
 {
