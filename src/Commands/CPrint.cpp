@@ -2,20 +2,31 @@
 #include "Commands/CPrint.hpp"
 #include "FSCLT.hpp"
 #include "OutputLog.hpp"
+#include "FilesystemFormatHelper.hpp"
 #include "config.hpp"
 
 namespace fs = std::filesystem;
 
 CPrint::CPrint(const std::vector<std::string>& args) : BaseCommand(CMD_NAME, args)
 {
+	//tool specific
 	BIND_COMMAND(std::vector<std::string>({ "info", "version" }), HandlePrintVersion);
-	BIND_COMMAND(std::vector<std::string>({ "info", "command", ARG_MULTIINP }), HandlePrintCommands);
 
+	//command specific
+	BIND_COMMAND(std::vector<std::string>({ "info", "command", ARG_MULTIINP }), HandlePrintInfoCommands);
+	BIND_COMMAND(std::vector<std::string>({ "list", "command",}), HandlePrintCommandList);
+
+	//dir list specific
+	BIND_COMMAND(std::vector<std::string>({ "list", "dir" }), HandlePrintListDirectory);
+
+	//dir info specific
 	BIND_COMMAND(std::vector<std::string>({ "info", "dir", ARG_MULTIINP }), HandlePrintInfoDirectory);
 	BIND_COMMAND(std::vector<std::string>({ "info", "file", ARG_MULTIINP }), HandlePrintInfoFile);
 
-	BIND_COMMAND(std::vector<std::string>({ "list", "dir" }), HandlePrintListDirectorys);
-	BIND_COMMAND(std::vector<std::string>({ "list", "file", ARG_MULTIINP }), HandlePrintListFiles);
+	//Search specific
+	BIND_COMMAND(std::vector<std::string>({ "print", "search", ARG_MULTIINP }), HandleSearch);
+
+;
 }
 
 void CPrint::PrintUsageInfo()
@@ -36,128 +47,60 @@ bool CPrint::HandlePrintVersion(const std::vector<std::string>& UserArgs)
 	
 	return true;
 }
-bool CPrint::HandlePrintCommands(const std::vector<std::string>& UserArgs)
+
+bool CPrint::HandlePrintInfoCommands(const std::vector<std::string>& UserArgs)
 {
-	bool FoundDirecorys = false;
+	OutputLog& log = OutputLog::Get();
 	if (UserArgs.empty())
 	{
-		for (const auto& item : FSCLT::Get().GetAllCommands())
-		{
-			item->PrintUsageInfo();
-			FoundDirecorys = true;
-		}
+		log.ReportStatus("No valid paremeter(s) found", MessageType::EERROR);
+		return false;
 	}
-	else
+
+	for (const auto& item : UserArgs)
 	{
-		for (const auto& item : UserArgs)
+		if (BaseCommand* cmd = FSCLT::Get().GetCommand(item))
 		{
-			BaseCommand* cmd = FSCLT::Get().GetCommand(item);
-			if (cmd)
-			{
-				cmd->PrintUsageInfo();
-				FoundDirecorys = true;
-			}
-			else
-			{
-				OutputLog::Get().ReportStatus("Couldn't find Command: " + item, MessageType::EERROR);
-				return false;
-			}
+			cmd->PrintUsageInfo();
+		}
+		else
+		{
+			log.ReportStatus("Couldn't find command: [" + item + "]. Make sure you spelled it correctly.", MessageType::EERROR);
+			return false;
 		}
 	}
 	return true;
 }
-bool CPrint::HandlePrintListDirectorys(const std::vector<std::string>& UserArgs)
+bool CPrint::HandlePrintCommandList(const std::vector<std::string>& UserArgs)
 {
-	std::vector<fs::path> buffer;
-	std::string ExecutePath = FSCLT::Get().GetExecutePath();
-
+	for (const auto& item : FSCLT::Get().GetAllCommands())
+	{
+		item->PrintUsageInfo();
+	}
+	return true;
+}
+bool CPrint::HandlePrintListDirectory(const std::vector<std::string>& UserArgs)
+{
 	OutputLog& log = OutputLog::Get();
-	log.ReportStatus("There are following files or directorys: ");
-	log.Seperate();
-
-	bool succses = true;
+	FilesystemFormatHelper& FormatHelper = FilesystemFormatHelper::Get();
 	try
-	{	//print all dirs
-		if (UserArgs.empty())
+	{
+		for (const auto& item : fs::directory_iterator(FSCLT::Get().GetExecutePath()))
 		{
-			for (const auto& item : fs::directory_iterator(ExecutePath))
-			{
-				buffer.push_back(item);
-			}
-		}	
+			log.SendMessage(FormatHelper.FormatDirectoryInfo(std::vector<fs::path>({ item })));
+		}
 	}
 	catch (const fs::filesystem_error& err)
 	{
 		log.ReportStatus("ERROR: " + std::string(err.what()), MessageType::EERROR);
-		succses = false;
+		return false;
 	}
 
-	if (buffer.empty())
-		log.SendMessage("No directories or files found", 0, Color::CYAN);
-	else
-		log.PrintDirListInfo(buffer);
-
-	return succses;
+	return true;
 }
-std::filesystem::path CPrint::DoesExists(const std::string name, const std::filesystem::path& fullPath) const
+bool CPrint::HandleSearch(const std::vector<std::string>& UserArgs)
 {
-	for (const auto& dir : fs::directory_iterator(fullPath))
-	{
-		fs::path dirPath = dir.path().parent_path().append(name);
-		if (fs::exists(dirPath))
-		{
-			return dirPath;
-		}
-	}
-	return fs::path();
-}
-
-bool CPrint::HandlePrintListFiles(const std::vector<std::string>& UserArgs)
-{
-	std::vector<fs::path> buffer;
-	std::string ExecutePath = FSCLT::Get().GetExecutePath();
-	ExecutePath = "C:\\Users\\joelf\\Pictures";
-
-	OutputLog& log = OutputLog::Get();
-	log.ReportStatus("There are following files in this directory: ");
-	log.Seperate();
-
-	bool succses = true;
-	try
-	{
-		//print all files
-		if (UserArgs.empty())
-		{
-			for (const auto& item : fs::directory_iterator(ExecutePath))
-			{
-				if (item.is_regular_file())
-					buffer.push_back(item);
-			}
-		}
-		else
-		{
-			//print specific files
-			for (const auto& arg : UserArgs)
-			{
-				std::vector<fs::path> foundFiles = CheckFileExtInDir(ExecutePath, arg);
-				std::copy(foundFiles.begin(), foundFiles.end(), std::back_inserter(buffer));
-			
-			}
-		}
-
-	}
-	catch (const fs::filesystem_error& err)
-	{
-		log.ReportStatus("ERROR: " + std::string(err.what()), MessageType::EERROR);
-		succses = false;
-	}
-
-	if (buffer.empty())
-		log.SendMessage("No files found", 1, Color::CYAN);
-	else
-		log.PrintDirListInfo(buffer);
-
-	return succses;
+	return true;
 }
 std::vector<fs::path> CPrint::CheckFileExtInDir(const std::filesystem::path& dir, const std::string& ext) const
 {

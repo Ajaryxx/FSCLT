@@ -42,6 +42,9 @@ bool BaseCommand::CheckEqualCommand(const std::vector<std::string>& pattern, std
 	size_t i;
 	for (i = 0; i < pattern.size(); i++)
 	{
+		if (i >= m_v_args.size())
+			return false;
+
 		if (pattern[i] == ARG_MULTIINP)
 		{
 			//get all args until end of vec
