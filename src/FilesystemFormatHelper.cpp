@@ -15,6 +15,7 @@ std::string FilesystemFormatHelper::FormatDirectoryInfo(const std::vector<std::f
 
 	for (const auto& item : vec)
 	{
+		
 		outStr.append("Name: " + item.filename().string()).push_back('\n');
 		outStr.append("Date modifieds: " + GetModifyTime(item)).push_back('\n');
 		outStr.append("Type: " + GetElementType(item)).push_back('\n');
@@ -36,6 +37,8 @@ std::string FilesystemFormatHelper::FormatDirectoryInfo(const std::vector<std::f
 }
 std::string FilesystemFormatHelper::FormatDirectoryInfo(const std::filesystem::path& path)
 {
+	OutputLog::Get().Seperate();
+
 	std::string outStr;
 
 	outStr.append("Name: " + path.filename().string()).push_back('\n');
@@ -51,17 +54,24 @@ std::string FilesystemFormatHelper::FormatDirectoryInfo(const std::filesystem::p
 	}
 	outStr.append("Size: " + GetElementSize(path)).push_back('\n');
 
-	OutputLog::Get().Seperate();
+	
 
 	return outStr;
 }
 //get the size of thise Element
 std::string FilesystemFormatHelper::GetElementSize(const std::filesystem::path& dir, ConvertUnit unit)
 {
+	if (IsProtected(dir))
+	{
+		OutputLog::Get().ReportStatus("[" + dir.filename().string() + "] is a protected file/folder. Can't indetify size.", MessageType::WARNING);
+		return std::string("UNDEFINED");
+	}
+	
 	std::string sizeStr;
 	uintmax_t SizeBytes;
 	if (fs::is_directory(dir))
 	{
+		
 		SizeBytes = CountFolderSize(dir);
 	}
 	else
@@ -171,26 +181,39 @@ double FilesystemFormatHelper::CalculateAutoSizeUnit(uintmax_t bytes, std::strin
 uintmax_t FilesystemFormatHelper::CountFolderSize(const std::filesystem::path& dir)
 {
 	uintmax_t count = 0;
+	if (IsProtected(dir))
+	{
+		OutputLog::Get().ReportStatus("[" + dir.filename().string() + "] is a protected folder. Can't identify Folder size", MessageType::WARNING);
+		return 0;
+	}
 	try
 	{
 		for (const auto& item : fs::recursive_directory_iterator(dir))
 		{
+			
 			count += fs::file_size(item);
 		}
 
 	}
 	catch (const fs::filesystem_error& err)
 	{
-		OutputLog::Get().ReportStatus("ERROR: " + std::string(err.what()), MessageType::EERROR);
+		OutputLog::Get().ReportStatus("ERROR: " + std::string(err.what()), MessageType::WARNING);
 	}
 
 	return count;
-
 }
 void FilesystemFormatHelper::CountFolderElements(const std::filesystem::path& dir, uint32_t& folderCount, uint32_t& fileCount)
 {
 	uint32_t DirCounter = 0; 
 	uint32_t FileCounter = 0;
+	if (IsProtected(dir))
+	{
+		folderCount = 0;
+		fileCount = 0;
+
+		OutputLog::Get().ReportStatus("[" + dir.filename().string() + "] is a protected folder. Can't count elements in this folder", MessageType::WARNING);
+		return;
+	}
 	try
 	{
 		for (const auto& item : fs::recursive_directory_iterator(dir))
@@ -207,7 +230,7 @@ void FilesystemFormatHelper::CountFolderElements(const std::filesystem::path& di
 	}
 	catch (const fs::filesystem_error& err)
 	{
-		OutputLog::Get().ReportStatus("ERROR: " + std::string(err.what()), MessageType::EERROR);
+		OutputLog::Get().ReportStatus("ERROR: " + std::string(err.what()), MessageType::WARNING);
 	}
 
 	folderCount = DirCounter;
@@ -252,4 +275,16 @@ std::string FilesystemFormatHelper::GetElementType(const std::filesystem::path& 
 bool FilesystemFormatHelper::InRange(double base, double min, double max) const
 {
 	return base >= min && base < max;
+}
+bool FilesystemFormatHelper::IsProtected(const std::filesystem::path& path) const
+{
+#ifdef _WIN32
+	
+	DWORD att = GetFileAttributesW(path.c_str());
+	if (att & (FILE_ATTRIBUTE_SYSTEM))
+		return true;
+
+#endif // _WIN32
+
+	return false;
 }

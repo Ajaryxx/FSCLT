@@ -112,6 +112,7 @@ void OutputLog::SetConsoleColor(Color color)
 		default:
 			std::cout << "\033[31m";
 			std::cerr << "undefined color!";
+			std::cout << "\033[37m";
 			break;
 	}
 }

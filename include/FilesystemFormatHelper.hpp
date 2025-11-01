@@ -47,6 +47,8 @@ private:
 	bool InRange(double base, double min, double max) const;
 	std::string RemoveDecimalZeros(const std::string& bytesStr);
 
+	bool IsProtected(const std::filesystem::path& path) const;
+
 	inline static FilesystemFormatHelper* m_filesystemUtility = nullptr;
 
 };

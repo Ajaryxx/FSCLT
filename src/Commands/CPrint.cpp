@@ -19,9 +19,8 @@ CPrint::CPrint(const std::vector<std::string>& args) : BaseCommand(CMD_NAME, arg
 	//dir list specific
 	BIND_COMMAND(std::vector<std::string>({ "list", "dir" }), HandlePrintListDirectory);
 
-	//dir info specific
-	BIND_COMMAND(std::vector<std::string>({ "info", "dir", ARG_MULTIINP }), HandlePrintInfoDirectory);
-	BIND_COMMAND(std::vector<std::string>({ "info", "file", ARG_MULTIINP }), HandlePrintInfoFile);
+	//info specific
+	BIND_COMMAND(std::vector<std::string>({ "info", "element", ARG_MULTIINP }), HandlePrintInfoElement);
 
 	//Search specific
 	BIND_COMMAND(std::vector<std::string>({ "print", "search", ARG_MULTIINP }), HandleSearch);
@@ -71,6 +70,7 @@ bool CPrint::HandlePrintInfoCommands(const std::vector<std::string>& UserArgs)
 	}
 	return true;
 }
+
 bool CPrint::HandlePrintCommandList(const std::vector<std::string>& UserArgs)
 {
 	for (const auto& item : FSCLT::Get().GetAllCommands())
@@ -79,6 +79,7 @@ bool CPrint::HandlePrintCommandList(const std::vector<std::string>& UserArgs)
 	}
 	return true;
 }
+
 bool CPrint::HandlePrintListDirectory(const std::vector<std::string>& UserArgs)
 {
 	OutputLog& log = OutputLog::Get();
@@ -102,24 +103,40 @@ bool CPrint::HandleSearch(const std::vector<std::string>& UserArgs)
 {
 	return true;
 }
-std::vector<fs::path> CPrint::CheckFileExtInDir(const std::filesystem::path& dir, const std::string& ext) const
-{
-	std::vector<fs::path> buffer;
-	for (const auto& item : fs::directory_iterator(dir))
-	{
-		if (item.path().extension().string() == ext)
-		{
-			buffer.push_back(item);	
-		}
-	}
-	return buffer;
-}
 
-bool CPrint::HandlePrintInfoDirectory(const std::vector<std::string>& UserArgs)
+bool CPrint::HandlePrintInfoElement(const std::vector<std::string>& UserArgs)
 {
-	return true;
-}
-bool CPrint::HandlePrintInfoFile(const std::vector<std::string>& UserArgs)
-{
+	OutputLog& log = OutputLog::Get();
+	FilesystemFormatHelper& FormatHelper = FilesystemFormatHelper::Get();
+
+	if (UserArgs.empty())
+	{
+		log.ReportStatus("No valid paremeter(s) found", MessageType::EERROR);
+		return false;
+	}
+
+	try
+	{
+		for (const auto& item : UserArgs)
+		{
+			const fs::path p = FSCLT::Get().GetExecutePath() / item;
+			if (fs::exists(p))
+			{
+				log.SendMessage(FormatHelper.FormatDirectoryInfo(p));
+			}
+			else
+			{
+				log.ReportStatus("Couldn't find directory or file: [" + item + "]", MessageType::EERROR);
+				return false;
+			}
+		}
+		
+	}
+	catch (const fs::filesystem_error& err)
+	{
+		log.ReportStatus("ERROR: " + std::string(err.what()), MessageType::EERROR);
+		return false;
+	}
+
 	return true;
 }

@@ -22,10 +22,10 @@ public:
 	BaseCommand* GetCommand(const std::string& name) const;
 
 	//Gets the path where fsclt is currenty executed
-	std::string GetExecutePath() const
+	std::filesystem::path GetExecutePath() const
 	{
 		//we want always know the current directory
-		return std::filesystem::current_path().string();
+		return std::filesystem::current_path();
 	}
 private:
 	

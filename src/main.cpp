@@ -3,6 +3,9 @@
 
 int main(int argc, char* argv[])
 {
+
+	std::setlocale(LC_ALL, ".UTF8");
+
 	//Convert char* to std::string
 	std::vector<std::string> args;
 	for (size_t i = 0; i < argc; i++)
