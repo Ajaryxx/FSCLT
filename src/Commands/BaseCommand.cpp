@@ -74,3 +74,44 @@ void BaseCommand::ReportInvalidCommand()
 
 	OutputLog::Get().ReportStatus(errorString, MessageType::EERROR);
 }
+std::vector<std::string> BaseCommand::ExtractParamFlags(const std::vector<std::string>& userParams)
+{
+	std::vector<std::string> v_paramFlags;
+
+	if (userParams[0][0] == '-')
+	{
+		for (const auto& item : userParams)
+		{
+			if (item[0] != '-')
+			{
+				break;
+			}
+			else
+			{
+				if(std::find(v_paramFlags.begin(), v_paramFlags.end(), item) == v_paramFlags.end())
+				v_paramFlags.push_back(item);
+			}
+		}
+	}
+	return v_paramFlags;
+}
+uint8_t BaseCommand::GetParamFlagsAsFlag(const std::vector<std::string>& flagsVec) const
+{
+	uint8_t flags = EFLAG_PARAM::ENONE;
+
+	for (const auto& item : flagsVec)
+	{
+		auto it = m_um_Flags.find(item);
+		if (it != m_um_Flags.end())
+		{
+			flags |= it->second;
+		}
+		else
+		{
+			OutputLog::Get().ReportStatus("Invalid parameter flag: [" + item + "]", MessageType::EERROR);
+			break;
+		}
+	}
+	
+	return flags;
+}

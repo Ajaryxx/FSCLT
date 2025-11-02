@@ -12,18 +12,16 @@ CPrint::CPrint(const std::vector<std::string>& args) : BaseCommand(CMD_NAME, arg
 	//tool specific
 	BIND_COMMAND(std::vector<std::string>({ "info", "version" }), HandlePrintVersion);
 
-	//command specific
-	BIND_COMMAND(std::vector<std::string>({ "info", "command", ARG_MULTIINP }), HandlePrintInfoCommands);
-	BIND_COMMAND(std::vector<std::string>({ "list", "command",}), HandlePrintCommandList);
-
-	//dir list specific
-	BIND_COMMAND(std::vector<std::string>({ "list", "dir" }), HandlePrintListDirectory);
-
 	//info specific
+	BIND_COMMAND(std::vector<std::string>({ "info", "command", ARG_MULTIINP }), HandlePrintInfoCommands);
 	BIND_COMMAND(std::vector<std::string>({ "info", "element", ARG_MULTIINP }), HandlePrintInfoElement);
 
-	//Search specific
-	BIND_COMMAND(std::vector<std::string>({ "print", "search", ARG_MULTIINP }), HandleSearch);
+	//list specific
+	BIND_COMMAND(std::vector<std::string>({ "list", "dir" }), HandlePrintListDirectory);
+	BIND_COMMAND(std::vector<std::string>({ "list", "command", }), HandlePrintCommandList);
+
+	//search specific
+	BIND_COMMAND(std::vector<std::string>({ "search", ARG_MULTIINP }), HandleSearch);
 
 ;
 }
@@ -99,10 +97,6 @@ bool CPrint::HandlePrintListDirectory(const std::vector<std::string>& UserArgs)
 
 	return true;
 }
-bool CPrint::HandleSearch(const std::vector<std::string>& UserArgs)
-{
-	return true;
-}
 
 bool CPrint::HandlePrintInfoElement(const std::vector<std::string>& UserArgs)
 {
@@ -139,4 +133,65 @@ bool CPrint::HandlePrintInfoElement(const std::vector<std::string>& UserArgs)
 	}
 
 	return true;
+}
+
+bool CPrint::HandleSearch(const std::vector<std::string>& UserArgs)
+{
+	OutputLog& log = OutputLog::Get();
+	FilesystemFormatHelper& FormatHelper = FilesystemFormatHelper::Get();
+
+	const fs::path executePath = FSCLT::Get().GetExecutePath();
+
+	if (UserArgs.empty())
+	{
+		log.ReportStatus("No valid paremeter(s) found", MessageType::EERROR);
+		return false;
+	}
+	std::vector<std::string> extractedFlags = ExtractParamFlags(UserArgs);
+	uint8_t flags = GetParamFlagsAsFlag(extractedFlags);
+	std::vector<fs::path> recrIt;
+
+	switch (flags)
+	{
+	case EFLAG_RECURSIVE:
+		recrIt = std::move(DoRecursiveDirIterate(executePath));
+		break;
+		
+	default:
+		recrIt = std::move(DoDirIterate(executePath));
+		break;
+	}
+
+	//Jump over the flags
+	for (size_t i = extractedFlags.size(); i < UserArgs.size(); i++)
+	{
+		for (const auto& item : recrIt)
+		{
+			if (item.stem().string() == UserArgs[i])
+			{
+				log.SendMessage(FormatHelper.FormatDirectoryInfo(item));
+			}
+		}
+	}
+	
+	return true;
+}
+
+std::vector<std::filesystem::path> CPrint::DoRecursiveDirIterate(const std::filesystem::path& searchPath) const
+{
+	std::vector<fs::path> paths;
+	for (const auto& item : fs::recursive_directory_iterator(searchPath))
+	{
+		paths.push_back(item);
+	}
+	return paths;
+}
+std::vector<std::filesystem::path> CPrint::DoDirIterate(const std::filesystem::path& searchPath) const
+{
+	std::vector<fs::path> paths;
+	for (const auto& item : fs::directory_iterator(searchPath))
+	{
+		paths.push_back(item);
+	}
+	return paths;
 }

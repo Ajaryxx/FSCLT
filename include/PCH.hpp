@@ -9,6 +9,7 @@
 #include <cmath>
 #include <chrono>
 #include <assert.h>
+#include <array>
 #include <functional>
 #include <algorithm>
 #include <string>

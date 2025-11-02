@@ -17,7 +17,8 @@ std::string FilesystemFormatHelper::FormatDirectoryInfo(const std::vector<std::f
 	{
 		
 		outStr.append("Name: " + item.filename().string()).push_back('\n');
-		outStr.append("Date modifieds: " + GetModifyTime(item)).push_back('\n');
+		outStr.append("Full path: " + item.string()).push_back('\n');
+		outStr.append("Date modified: " + GetModifyTime(item)).push_back('\n');
 		outStr.append("Type: " + GetElementType(item)).push_back('\n');
 
 		if (fs::is_directory(item))
@@ -42,7 +43,8 @@ std::string FilesystemFormatHelper::FormatDirectoryInfo(const std::filesystem::p
 	std::string outStr;
 
 	outStr.append("Name: " + path.filename().string()).push_back('\n');
-	outStr.append("Date modifieds: " + GetModifyTime(path)).push_back('\n');
+	outStr.append("Full path: " + path.string()).push_back('\n');
+	outStr.append("Date modified: " + GetModifyTime(path)).push_back('\n');
 	outStr.append("Type: " + GetElementType(path)).push_back('\n');
 
 	if (fs::is_directory(path))
@@ -190,7 +192,6 @@ uintmax_t FilesystemFormatHelper::CountFolderSize(const std::filesystem::path& d
 	{
 		for (const auto& item : fs::recursive_directory_iterator(dir))
 		{
-			
 			count += fs::file_size(item);
 		}
 
@@ -263,7 +264,12 @@ std::string FilesystemFormatHelper::GetElementType(const std::filesystem::path& 
 	}
 	else if (fs::is_regular_file(path))
 	{
-		return path.extension().string();
+		std::string type = path.extension().string();
+
+		if (type.empty())
+			return std::string("NO EXTENSION");
+
+		return type;
 	}
 	else if (fs::is_symlink(path))
 	{

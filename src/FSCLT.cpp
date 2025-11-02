@@ -5,6 +5,7 @@
 
 FSCLT* FSCLT::fsclt = nullptr;
 
+
 FSCLT::FSCLT(int argc, const std::vector<std::string>& argv)
 {
 	this->m_Argc = argc;

@@ -23,4 +23,10 @@ private:
 	bool HandleSearch(const std::vector<std::string>& UserArgs);
 
 	bool HandlePrintInfoElement(const std::vector<std::string>& UserArgs);
+
+	bool CheckSearchRecursive(const std::string& arg);
+
+	std::vector<std::filesystem::path> DoRecursiveDirIterate(const std::filesystem::path& searchPath) const;
+	std::vector<std::filesystem::path> DoDirIterate(const std::filesystem::path& searchPath) const;
+
 };
