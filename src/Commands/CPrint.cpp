@@ -9,19 +9,16 @@ namespace fs = std::filesystem;
 
 CPrint::CPrint(const std::vector<std::string>& args) : BaseCommand(CMD_NAME, args)
 {
-	//tool specific
+	//prints out the tool version
 	BIND_COMMAND(std::vector<std::string>({ "info", "version" }), HandlePrintVersion);
 
-	//info specific
-	BIND_COMMAND(std::vector<std::string>({ "info", "command", ARG_MULTIINP }), HandlePrintInfoCommands);
-	BIND_COMMAND(std::vector<std::string>({ "info", "element", ARG_MULTIINP }), HandlePrintInfoElement);
+	//prints out the usage of all commands or prints only 1 or more command usage infp 
+	BIND_COMMAND(std::vector<std::string>({ "command", ARG_PARAM_FLAGS, ARG_MULTI_INP }), HandlePrintInfoCommands);
+	//prints out the file or dir info
+	BIND_COMMAND(std::vector<std::string>({ "info", "element", ARG_PARAM_FLAGS, ARG_MULTI_INP }), HandlePrintInfoElement);
 
-	//list specific
-	BIND_COMMAND(std::vector<std::string>({ "list", "dir" }), HandlePrintListDirectory);
-	BIND_COMMAND(std::vector<std::string>({ "list", "command", }), HandlePrintCommandList);
-
-	//search specific
-	BIND_COMMAND(std::vector<std::string>({ "search", ARG_MULTIINP }), HandleSearch);
+	//searches a file and tells if it exists
+	BIND_COMMAND(std::vector<std::string>({ "search", ARG_PARAM_FLAGS, ARG_MULTI_INP }), HandleSearch);
 
 ;
 }
@@ -38,19 +35,49 @@ fsclt prints list file [EXTENSION] ->[prints all files with a spefific extension
 Color::CYAN);
 }
 
-bool CPrint::HandlePrintVersion(const std::vector<std::string>& UserArgs)
+bool CPrint::HandlePrintVersion(const std::vector<std::string>& UserArgs, uint8_t ParamFlag)
 {
 	OutputLog::Get().SendMessage(TOOL_VERSION, 1);
 	
 	return true;
 }
 
-bool CPrint::HandlePrintInfoCommands(const std::vector<std::string>& UserArgs)
+bool CPrint::HandlePrintInfoCommands(const std::vector<std::string>& UserArgs, uint8_t ParamFlag)
 {
 	OutputLog& log = OutputLog::Get();
+
+	if (ParamFlag & EFLAG_PARAM::EFLAG_INFO && ParamFlag & EFLAG_PARAM::EFLAG_LIST)
+	{
+		log.ReportStatus("You cant combine both flags: [-i] and [-l].", MessageType::EERROR);
+		return false;
+	}
+
+	switch (ParamFlag)
+	{
+	case EFLAG_INFO:
+		return PrintCommandsWithName(UserArgs);
+		break;
+
+	case EFLAG_LIST:
+		for (const auto& item : FSCLT::Get().GetAllCommands())
+		{
+			item->PrintUsageInfo();
+		}
+		break;
+
+	default:
+		log.ReportStatus("No valid Parameter flag found. Use -i or -l flag.", MessageType::EERROR);
+		return false;
+		break;
+	}
+
+	return true;
+}
+bool CPrint::PrintCommandsWithName(const std::vector<std::string>& UserArgs)
+{
 	if (UserArgs.empty())
 	{
-		log.ReportStatus("No valid paremeter(s) found", MessageType::EERROR);
+		OutputLog::Get().ReportStatus("No valid paremeter(s) for listing Commands with name", MessageType::EERROR);
 		return false;
 	}
 
@@ -62,14 +89,13 @@ bool CPrint::HandlePrintInfoCommands(const std::vector<std::string>& UserArgs)
 		}
 		else
 		{
-			log.ReportStatus("Couldn't find command: [" + item + "]. Make sure you spelled it correctly.", MessageType::EERROR);
+			OutputLog::Get().ReportStatus("Couldn't find command: [" + item + "]. Make sure you spelled it correctly.", MessageType::EERROR);
 			return false;
 		}
 	}
-	return true;
 }
 
-bool CPrint::HandlePrintCommandList(const std::vector<std::string>& UserArgs)
+bool CPrint::HandlePrintCommandList(const std::vector<std::string>& UserArgs, uint8_t ParamFlag)
 {
 	for (const auto& item : FSCLT::Get().GetAllCommands())
 	{
@@ -78,7 +104,7 @@ bool CPrint::HandlePrintCommandList(const std::vector<std::string>& UserArgs)
 	return true;
 }
 
-bool CPrint::HandlePrintListDirectory(const std::vector<std::string>& UserArgs)
+bool CPrint::HandlePrintListDirectory(const std::vector<std::string>& UserArgs, uint8_t ParamFlag)
 {
 	OutputLog& log = OutputLog::Get();
 	FilesystemFormatHelper& FormatHelper = FilesystemFormatHelper::Get();
@@ -98,31 +124,61 @@ bool CPrint::HandlePrintListDirectory(const std::vector<std::string>& UserArgs)
 	return true;
 }
 
-bool CPrint::HandlePrintInfoElement(const std::vector<std::string>& UserArgs)
+bool CPrint::HandlePrintInfoElement(const std::vector<std::string>& UserArgs, uint8_t ParamFlag)
 {
 	OutputLog& log = OutputLog::Get();
 	FilesystemFormatHelper& FormatHelper = FilesystemFormatHelper::Get();
-
-	if (UserArgs.empty())
+	
+	if (ParamFlag & EFLAG_PARAM::EFLAG_LOC && ParamFlag & EFLAG_PARAM::EFLAG_RECURSIVE)
 	{
-		log.ReportStatus("No valid paremeter(s) found", MessageType::EERROR);
+		log.ReportStatus("You cant combine both flags: [-loc] and [-r].", MessageType::EERROR);
 		return false;
 	}
+	
+	std::vector<fs::path> pathsVec;
+	switch (ParamFlag)
+	{
 
+	case EFLAG_LOC:
+		pathsVec = DoDirIterate(FSCLT::Get().GetExecutePath());
+		
+		break;
+
+	case EFLAG_RECURSIVE:
+		pathsVec = DoRecursiveDirIterate("C:\\Users\\joelf\\Documents");
+		break;
+
+	default:
+		log.ReportStatus("No valid Parameter flag found. Use -loc or -r flag.", MessageType::EERROR);
+		return false;
+		break;
+	}
+	if (UserArgs.empty())
+	{
+		log.ReportStatus("No valid paremeter(s) for getting element info", MessageType::EERROR);
+		return false;
+	}
+	
 	try
 	{
-		for (const auto& item : UserArgs)
+		for (const auto& arg : UserArgs)
 		{
-			const fs::path p = FSCLT::Get().GetExecutePath() / item;
-			if (fs::exists(p))
+			bool exists = false;
+			for (const auto& item : pathsVec)
 			{
-				log.SendMessage(FormatHelper.FormatDirectoryInfo(p));
+				if (item.stem().string() == arg)
+				{
+					log.SendMessage(FormatHelper.FormatDirectoryInfo(item));
+					exists = true;
+				
+				}
+				
 			}
-			else
+			if (!exists)
 			{
-				log.ReportStatus("Couldn't find directory or file: [" + item + "]", MessageType::EERROR);
-				return false;
+				log.SendMessage("File or Directory: [" + arg + "] doesnt exists", 1, Color::BLUE);
 			}
+		
 		}
 		
 	}
@@ -135,37 +191,45 @@ bool CPrint::HandlePrintInfoElement(const std::vector<std::string>& UserArgs)
 	return true;
 }
 
-bool CPrint::HandleSearch(const std::vector<std::string>& UserArgs)
+bool CPrint::HandleSearch(const std::vector<std::string>& UserArgs, uint8_t ParamFlag)
 {
 	OutputLog& log = OutputLog::Get();
 	FilesystemFormatHelper& FormatHelper = FilesystemFormatHelper::Get();
-
 	const fs::path executePath = FSCLT::Get().GetExecutePath();
 
 	if (UserArgs.empty())
 	{
-		log.ReportStatus("No valid paremeter(s) found", MessageType::EERROR);
+		log.ReportStatus("Invalid paremeter(s) for search command.", MessageType::EERROR);
 		return false;
 	}
-	std::vector<std::string> extractedFlags = ExtractParamFlags(UserArgs);
-	uint8_t flags = GetParamFlagsAsFlag(extractedFlags);
-	std::vector<fs::path> recrIt;
 
-	switch (flags)
+	if (ParamFlag & EFLAG_PARAM::EFLAG_RECURSIVE && ParamFlag & EFLAG_PARAM::EFLAG_LOC)
+	{
+		log.ReportStatus("You cant combine both flags: [-r] and [-loc].", MessageType::EERROR);
+		return false;
+	}
+
+	std::vector<fs::path> dirIter;
+
+	switch (ParamFlag)
 	{
 	case EFLAG_RECURSIVE:
-		recrIt = std::move(DoRecursiveDirIterate(executePath));
+		dirIter = std::move(DoRecursiveDirIterate(executePath));
 		break;
 		
+	case EFLAG_LOC:
+		dirIter = std::move(DoDirIterate(executePath));
+		break;
+
 	default:
-		recrIt = std::move(DoDirIterate(executePath));
+		log.ReportStatus("No valid Parameter flag found. Use -r or -loc flag.", MessageType::EERROR);
 		break;
 	}
 
 	//Jump over the flags
-	for (size_t i = extractedFlags.size(); i < UserArgs.size(); i++)
+	for (size_t i = 0; i < UserArgs.size(); i++)
 	{
-		for (const auto& item : recrIt)
+		for (const auto& item : dirIter)
 		{
 			if (item.stem().string() == UserArgs[i])
 			{
@@ -194,4 +258,8 @@ std::vector<std::filesystem::path> CPrint::DoDirIterate(const std::filesystem::p
 		paths.push_back(item);
 	}
 	return paths;
+}
+bool CPrint::CheckSameFlags(uint8_t base, EFLAG_PARAM params...)
+{
+	return base & params;
 }

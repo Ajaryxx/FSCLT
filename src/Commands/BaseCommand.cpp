@@ -4,7 +4,7 @@
 #include "FSCLT.hpp"
 
 
-void BaseCommand::BindCommand(const std::vector<std::string>& pattern, std::function<bool(const std::vector<std::string>& userArg)> func)
+void BaseCommand::BindCommand(const std::vector<std::string>& pattern, std::function<bool(const std::vector<std::string>& userArg, uint8_t paramFlag)> func)
 {
 	for (size_t i = 0; i < m_v_CommandDispatch.size(); i++)
 	{
@@ -22,11 +22,12 @@ bool BaseCommand::Execute()
 		const std::vector<std::string>& pattern = m_v_CommandDispatch[i].first;
 		
 		std::vector<std::string> UserArgs;
-		SearchSuccess = CheckEqualCommand(pattern, UserArgs);
+		uint8_t ParamFlag;
+		SearchSuccess = ParseCommand(pattern, UserArgs, ParamFlag);
 		
 		if (SearchSuccess)
 		{	
-			bool ExecuteSuccess = m_v_CommandDispatch[i].second(UserArgs);
+			bool ExecuteSuccess = m_v_CommandDispatch[i].second(UserArgs, ParamFlag);
 
 			return ExecuteSuccess;
 		}
@@ -37,33 +38,43 @@ bool BaseCommand::Execute()
 	return SearchSuccess;
 }
 
-bool BaseCommand::CheckEqualCommand(const std::vector<std::string>& pattern, std::vector<std::string>& userArgs)
+bool BaseCommand::ParseCommand(const std::vector<std::string>& pattern, std::vector<std::string>& userArgs, uint8_t& paramFlag)
 {
 	size_t i;
 	for (i = 0; i < pattern.size(); i++)
 	{
+		//Check so we dont get an out of bounds error
 		if (i >= m_v_args.size())
-			return false;
+			return true;
 
-		if (pattern[i] == ARG_MULTIINP)
+		if (pattern[i] == ARG_PARAM_FLAGS)
 		{
+			std::vector<std::string> ParamFlags = ExtractParamFlags(std::vector<std::string>(m_v_args.begin() + i, m_v_args.end()));
+			paramFlag = GetParamFlagsAsFlag(ParamFlags);
+		}
+		else if (pattern[i] == ARG_USER_INP)
+		{
+			//Store user argument to the user args vector
+			userArgs.push_back(m_v_args[i]);
+		}
+		else if (pattern[i] == ARG_MULTI_INP)
+		{
+			if (i >= m_v_args.size())
+				break;
+
 			//get all args until end of vec
 			userArgs.insert(userArgs.end(), m_v_args.begin() + i, m_v_args.end());
 			i += m_v_args.size();
 			break;
 		}
-		else if (pattern[i] == ARG_USERINP)
-		{
-			//Store user argument to the user args vector
-			userArgs.push_back(m_v_args[i]);
-		}
+		//We have to check this at the end
 		else if (pattern[i] != m_v_args[i])
 		{
 			return false;
 		}
 	}
 	
-	return i >= m_v_args.size();
+	return true;
 }
 void BaseCommand::ReportInvalidCommand()
 {
@@ -77,6 +88,9 @@ void BaseCommand::ReportInvalidCommand()
 std::vector<std::string> BaseCommand::ExtractParamFlags(const std::vector<std::string>& userParams)
 {
 	std::vector<std::string> v_paramFlags;
+
+	if (userParams.empty())
+		return v_paramFlags;
 
 	if (userParams[0][0] == '-')
 	{

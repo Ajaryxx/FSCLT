@@ -14,17 +14,21 @@ private:
 	// Inherited via BaseCommand
 	void PrintUsageInfo() override;
 
-	bool HandlePrintVersion(const std::vector<std::string>& UserArgs);
-	bool HandlePrintInfoCommands(const std::vector<std::string>& UserArgs);
-	bool HandlePrintCommandList(const std::vector<std::string>& UserArgs);
+	bool HandlePrintVersion(const std::vector<std::string>& UserArgs, uint8_t ParamFlag);
+	bool HandlePrintInfoCommands(const std::vector<std::string>& UserArgs, uint8_t ParamFlag);
+	bool HandlePrintCommandList(const std::vector<std::string>& UserArgs, uint8_t ParamFlag);
 
-	bool HandlePrintListDirectory(const std::vector<std::string>& UserArgs);
+	bool HandlePrintListDirectory(const std::vector<std::string>& UserArgs, uint8_t ParamFlag);
 
-	bool HandleSearch(const std::vector<std::string>& UserArgs);
+	bool HandleSearch(const std::vector<std::string>& UserArgs, uint8_t ParamFlag);
 
-	bool HandlePrintInfoElement(const std::vector<std::string>& UserArgs);
+	bool HandlePrintInfoElement(const std::vector<std::string>& UserArgs, uint8_t ParamFlag);
+
+	bool PrintCommandsWithName(const std::vector<std::string>& UserArgs);
 
 	bool CheckSearchRecursive(const std::string& arg);
+
+	bool CheckSameFlags(uint8_t base, EFLAG_PARAM params...);
 
 	std::vector<std::filesystem::path> DoRecursiveDirIterate(const std::filesystem::path& searchPath) const;
 	std::vector<std::filesystem::path> DoDirIterate(const std::filesystem::path& searchPath) const;
