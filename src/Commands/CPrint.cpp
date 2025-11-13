@@ -20,7 +20,7 @@ CPrint::CPrint(const std::vector<std::string>& args) : BaseCommand(CMD_NAME, arg
 	//searches a file and tells if it exists
 	BIND_COMMAND(std::vector<std::string>({ "search", ARG_PARAM_FLAGS, ARG_MULTI_INP }), HandleSearch);
 
-;
+
 }
 
 void CPrint::PrintUsageInfo()
@@ -145,7 +145,7 @@ bool CPrint::HandlePrintInfoElement(const std::vector<std::string>& UserArgs, ui
 		break;
 
 	case EFLAG_RECURSIVE:
-		pathsVec = DoRecursiveDirIterate("C:\\Users\\joelf\\Documents");
+		pathsVec = DoRecursiveDirIterate(FSCLT::Get().GetExecutePath());
 		break;
 
 	default:
