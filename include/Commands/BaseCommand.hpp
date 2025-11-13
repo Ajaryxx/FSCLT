@@ -42,11 +42,12 @@ protected:
 	std::vector<std::pair<std::vector<std::string>, std::function<bool(const std::vector<std::string>& userArgs, uint8_t ParamFlags)>>> m_v_CommandDispatch;
 	void ReportInvalidCommand();
 
-	//Extract all flags
-	std::vector<std::string> ExtractParamFlags(const std::vector<std::string>& userParams);
+	//Extract all flags from this vec
+	std::vector<std::string> ExtractParamFlags(size_t offset, size_t& jumpedOver);
 
 	uint8_t GetParamFlagsAsFlag(const std::vector<std::string>& flagsVec) const;
-
+	//Checks if there are paremeters. If no parameters were found it prints a error message
+	bool PrintAndCheckParemetersFound(const std::vector<std::string>& args, const std::string& commandHandle) const;
 private:
 	std::string m_CommandName;
 

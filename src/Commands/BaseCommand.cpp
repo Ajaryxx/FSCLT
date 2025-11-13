@@ -27,7 +27,7 @@ bool BaseCommand::Execute()
 		
 		if (SearchSuccess)
 		{	
-			bool ExecuteSuccess = m_v_CommandDispatch[i].second(UserArgs, ParamFlag);
+			const bool ExecuteSuccess = m_v_CommandDispatch[i].second(UserArgs, ParamFlag);
 
 			return ExecuteSuccess;
 		}
@@ -40,42 +40,65 @@ bool BaseCommand::Execute()
 
 bool BaseCommand::ParseCommand(const std::vector<std::string>& pattern, std::vector<std::string>& userArgs, uint8_t& paramFlag)
 {
-	size_t i;
-	for (i = 0; i < pattern.size(); i++)
+	size_t i = 0;
+
+	for (const auto& item : pattern)
 	{
-		//Check so we dont get an out of bounds error
-		if (i >= m_v_args.size())
-			return true;
+		if (item == ARG_PARAM_FLAGS)
+		{
+			size_t jumpedOver;
+			std::vector<std::string> paramFlags = ExtractParamFlags(i, jumpedOver);
+			paramFlag = GetParamFlagsAsFlag(paramFlags);
+			i += jumpedOver - 1;
 
-		if (pattern[i] == ARG_PARAM_FLAGS)
-		{
-			std::vector<std::string> ParamFlags = ExtractParamFlags(std::vector<std::string>(m_v_args.begin() + i, m_v_args.end()));
-			paramFlag = GetParamFlagsAsFlag(ParamFlags);
 		}
-		else if (pattern[i] == ARG_USER_INP)
+		else if (item == ARG_USER_INP)
 		{
-			//Store user argument to the user args vector
-			userArgs.push_back(m_v_args[i]);
+			userArgs.push_back(item);
 		}
-		else if (pattern[i] == ARG_MULTI_INP)
+		else if (item == ARG_MULTI_INP)
 		{
-			if (i >= m_v_args.size())
-				break;
-
-			//get all args until end of vec
-			userArgs.insert(userArgs.end(), m_v_args.begin() + i, m_v_args.end());
-			i += m_v_args.size();
+			std::copy(m_v_args.cbegin() + i, m_v_args.cend(), std::back_inserter(userArgs));
+				
 			break;
 		}
-		//We have to check this at the end
-		else if (pattern[i] != m_v_args[i])
+		else if(item != m_v_args[i])
 		{
 			return false;
 		}
+		i++;
 	}
 	
 	return true;
 }
+std::vector<std::string> BaseCommand::ExtractParamFlags(size_t offset, size_t& jumpedOver)
+{
+	std::vector<std::string> extractedFlags;
+
+	size_t ParseJump = 0;
+	if (m_v_args[offset][0] != '-')
+		return extractedFlags;
+
+	for (auto it = m_v_args.cbegin() + offset; it != m_v_args.cend(); it++)
+	{
+		if (it->at(0) == '-')
+		{
+			if(std::find(extractedFlags.begin(), extractedFlags.end(), *it) == extractedFlags.end())
+				extractedFlags.push_back(*it);
+
+			ParseJump++;
+		}
+		else
+		{
+			break;
+		}
+	}
+	
+	jumpedOver = ParseJump;
+
+	return extractedFlags;
+}
+
 void BaseCommand::ReportInvalidCommand()
 {
 	std::string errorString = "Couldn't find Command: " + m_CommandName + " ";
@@ -84,30 +107,6 @@ void BaseCommand::ReportInvalidCommand()
 		errorString.append(item + " ");
 
 	OutputLog::Get().ReportStatus(errorString, MessageType::EERROR);
-}
-std::vector<std::string> BaseCommand::ExtractParamFlags(const std::vector<std::string>& userParams)
-{
-	std::vector<std::string> v_paramFlags;
-
-	if (userParams.empty())
-		return v_paramFlags;
-
-	if (userParams[0][0] == '-')
-	{
-		for (const auto& item : userParams)
-		{
-			if (item[0] != '-')
-			{
-				break;
-			}
-			else
-			{
-				if(std::find(v_paramFlags.begin(), v_paramFlags.end(), item) == v_paramFlags.end())
-				v_paramFlags.push_back(item);
-			}
-		}
-	}
-	return v_paramFlags;
 }
 uint8_t BaseCommand::GetParamFlagsAsFlag(const std::vector<std::string>& flagsVec) const
 {
@@ -128,4 +127,13 @@ uint8_t BaseCommand::GetParamFlagsAsFlag(const std::vector<std::string>& flagsVe
 	}
 	
 	return flags;
+}
+bool BaseCommand::PrintAndCheckParemetersFound(const std::vector<std::string>& args, const std::string& commandHandle) const
+{
+	if (args.empty())
+	{
+		OutputLog::Get().ReportStatus("No valid paremeter(s) for: " + commandHandle, MessageType::EERROR);
+		return false;
+	}
+	return true;
 }

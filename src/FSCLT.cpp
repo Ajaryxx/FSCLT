@@ -43,7 +43,7 @@ bool FSCLT::Run()
 		OutputLog::Get().ReportStatus("Usage: fsclt [Command Flag] [ARG1] [ARG2] AND [Command Flag] [ARG1] [ARG2] | ...\nFor example: fsclt print info all");
 		return false;
 	}
-	bool succes = Parse();
+	bool succes = ParseCommandLine();
 
 	if (!succes)
 		return false;
@@ -70,7 +70,7 @@ bool FSCLT::Run()
 
 	return succes;
 }
-bool FSCLT::Parse()
+bool FSCLT::ParseCommandLine()
 {
 	//Jump over path to exe
 	for (size_t i = 1; i < m_Argc; i++)

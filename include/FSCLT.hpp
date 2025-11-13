@@ -29,7 +29,7 @@ public:
 	}
 private:
 	
-	bool Parse();
+	bool ParseCommandLine();
 	std::vector<std::string> CatchArguments(size_t offset, size_t& newOffset);
 
 private:

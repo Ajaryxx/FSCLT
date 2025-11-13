@@ -75,11 +75,8 @@ bool CPrint::HandlePrintInfoCommands(const std::vector<std::string>& UserArgs, u
 }
 bool CPrint::PrintCommandsWithName(const std::vector<std::string>& UserArgs)
 {
-	if (UserArgs.empty())
-	{
-		OutputLog::Get().ReportStatus("No valid paremeter(s) for listing Commands with name", MessageType::EERROR);
+	if (!PrintAndCheckParemetersFound(UserArgs, "Print command with name"))
 		return false;
-	}
 
 	for (const auto& item : UserArgs)
 	{
@@ -135,6 +132,9 @@ bool CPrint::HandlePrintInfoElement(const std::vector<std::string>& UserArgs, ui
 		return false;
 	}
 	
+	if (!PrintAndCheckParemetersFound(UserArgs, "Print Info Element"))
+		return false;
+
 	std::vector<fs::path> pathsVec;
 	switch (ParamFlag)
 	{
@@ -153,42 +153,8 @@ bool CPrint::HandlePrintInfoElement(const std::vector<std::string>& UserArgs, ui
 		return false;
 		break;
 	}
-	if (UserArgs.empty())
-	{
-		log.ReportStatus("No valid paremeter(s) for getting element info", MessageType::EERROR);
-		return false;
-	}
 	
-	try
-	{
-		for (const auto& arg : UserArgs)
-		{
-			bool exists = false;
-			for (const auto& item : pathsVec)
-			{
-				if (item.stem().string() == arg)
-				{
-					log.SendMessage(FormatHelper.FormatDirectoryInfo(item));
-					exists = true;
-				
-				}
-				
-			}
-			if (!exists)
-			{
-				log.SendMessage("File or Directory: [" + arg + "] doesnt exists", 1, Color::BLUE);
-			}
-		
-		}
-		
-	}
-	catch (const fs::filesystem_error& err)
-	{
-		log.ReportStatus("ERROR: " + std::string(err.what()), MessageType::EERROR);
-		return false;
-	}
-
-	return true;
+	return PrintAllEqualNamesInArgumentList(UserArgs, pathsVec);
 }
 
 bool CPrint::HandleSearch(const std::vector<std::string>& UserArgs, uint8_t ParamFlag)
@@ -197,11 +163,8 @@ bool CPrint::HandleSearch(const std::vector<std::string>& UserArgs, uint8_t Para
 	FilesystemFormatHelper& FormatHelper = FilesystemFormatHelper::Get();
 	const fs::path executePath = FSCLT::Get().GetExecutePath();
 
-	if (UserArgs.empty())
-	{
-		log.ReportStatus("Invalid paremeter(s) for search command.", MessageType::EERROR);
+	if (!PrintAndCheckParemetersFound(UserArgs, "Print handle search"))
 		return false;
-	}
 
 	if (ParamFlag & EFLAG_PARAM::EFLAG_RECURSIVE && ParamFlag & EFLAG_PARAM::EFLAG_LOC)
 	{
@@ -226,21 +189,56 @@ bool CPrint::HandleSearch(const std::vector<std::string>& UserArgs, uint8_t Para
 		break;
 	}
 
-	//Jump over the flags
+	//search
 	for (size_t i = 0; i < UserArgs.size(); i++)
 	{
+		bool found = false;
 		for (const auto& item : dirIter)
 		{
 			if (item.stem().string() == UserArgs[i])
 			{
-				log.SendMessage(FormatHelper.FormatDirectoryInfo(item));
+				found = true;
+				log.SendMessage("File or Directory: [" + UserArgs[i] + "] exists in path: " + item.string());
 			}
+		}
+		if (!found)
+		{
+			log.SendMessage("File or Directory: [" + UserArgs[i] + "] doenst exits");
 		}
 	}
 	
 	return true;
 }
+bool CPrint::PrintAllEqualNamesInArgumentList(const std::vector<std::string>& args, const std::vector<std::filesystem::path>& paths)
+{
+	try
+	{
+		for (const auto& arg : args)
+		{
+			bool exists = false;
+			for (const auto& item : paths)
+			{
+				if (item.stem().string() == arg)
+				{
+					OutputLog::Get().SendMessage(FilesystemFormatHelper::Get().FormatDirectoryInfo(item));
+					exists = true;
 
+				}
+			}
+			if (!exists)
+			{
+				OutputLog::Get().SendMessage("File or Directory: [" + arg + "] doesnt exists", 1, Color::BLUE);
+			}
+		}
+	}
+	catch (const fs::filesystem_error& err)
+	{
+		OutputLog::Get().ReportStatus("ERROR: " + std::string(err.what()), MessageType::EERROR);
+		return false;
+	}
+
+	return true;
+}
 std::vector<std::filesystem::path> CPrint::DoRecursiveDirIterate(const std::filesystem::path& searchPath) const
 {
 	std::vector<fs::path> paths;
@@ -259,7 +257,8 @@ std::vector<std::filesystem::path> CPrint::DoDirIterate(const std::filesystem::p
 	}
 	return paths;
 }
-bool CPrint::CheckSameFlags(uint8_t base, EFLAG_PARAM params...)
+bool CPrint::CheckSameFlags(uint8_t base, EFLAG_PARAM params, ...)
 {
+
 	return base & params;
 }
