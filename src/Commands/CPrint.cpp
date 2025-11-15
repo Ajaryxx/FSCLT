@@ -14,13 +14,15 @@ CPrint::CPrint(const std::vector<std::string>& args) : BaseCommand(CMD_NAME, arg
 
 	//prints out the usage of all commands or prints only 1 or more command usage infp 
 	BIND_COMMAND(std::vector<std::string>({ "command", ARG_PARAM_FLAGS, ARG_MULTI_INP }), HandlePrintInfoCommands);
+
 	//prints out the file or dir info
 	BIND_COMMAND(std::vector<std::string>({ "info", "element", ARG_PARAM_FLAGS, ARG_MULTI_INP }), HandlePrintInfoElement);
 
+	//prints out the file or dir info
+	BIND_COMMAND(std::vector<std::string>({ ARG_PARAM_FLAGS, "dir"}), HandlePrintListDirectory);
+
 	//searches a file and tells if it exists
 	BIND_COMMAND(std::vector<std::string>({ "search", ARG_PARAM_FLAGS, ARG_MULTI_INP }), HandleSearch);
-
-
 }
 
 void CPrint::PrintUsageInfo()
@@ -55,19 +57,25 @@ bool CPrint::HandlePrintInfoCommands(const std::vector<std::string>& UserArgs, u
 	switch (ParamFlag)
 	{
 	case EFLAG_INFO:
+
 		return PrintCommandsWithName(UserArgs);
+
 		break;
 
 	case EFLAG_LIST:
+
 		for (const auto& item : FSCLT::Get().GetAllCommands())
 		{
 			item->PrintUsageInfo();
 		}
+
 		break;
 
 	default:
 		log.ReportStatus("No valid Parameter flag found. Use -i or -l flag.", MessageType::EERROR);
+
 		return false;
+
 		break;
 	}
 
@@ -105,9 +113,32 @@ bool CPrint::HandlePrintListDirectory(const std::vector<std::string>& UserArgs, 
 {
 	OutputLog& log = OutputLog::Get();
 	FilesystemFormatHelper& FormatHelper = FilesystemFormatHelper::Get();
+
+	if (ParamFlag & EFLAG_PARAM::EFLAG_LOC && ParamFlag & EFLAG_PARAM::EFLAG_RECURSIVE)
+	{
+		log.ReportStatus("You cant combine both flags: [-loc] and [-r].", MessageType::EERROR);
+		return false;
+	}
+	std::vector<fs::path> pathBuffer;
+	switch (ParamFlag)
+	{
+	case EFLAG_LOC:
+		pathBuffer = DoDirIterate(FSCLT::Get().GetExecutePath());
+		break;
+
+	case EFLAG_RECURSIVE:
+		pathBuffer = DoRecursiveDirIterate(FSCLT::Get().GetExecutePath());
+		break;
+
+	default:
+		log.ReportStatus("No valid Parameter flag found. Use -loc or -r flag.", MessageType::EERROR);
+		return false;
+		break;
+	}
+
 	try
 	{
-		for (const auto& item : fs::directory_iterator(FSCLT::Get().GetExecutePath()))
+		for (const auto& item : pathBuffer)
 		{
 			log.SendMessage(FormatHelper.FormatDirectoryInfo(item));
 		}
@@ -129,7 +160,7 @@ bool CPrint::HandlePrintInfoElement(const std::vector<std::string>& UserArgs, ui
 	if (ParamFlag & EFLAG_PARAM::EFLAG_LOC && ParamFlag & EFLAG_PARAM::EFLAG_RECURSIVE)
 	{
 		log.ReportStatus("You cant combine both flags: [-loc] and [-r].", MessageType::EERROR);
-		return false;
+			return false;
 	}
 	
 	if (!PrintAndCheckParemetersFound(UserArgs, "Print Info Element"))
@@ -138,10 +169,8 @@ bool CPrint::HandlePrintInfoElement(const std::vector<std::string>& UserArgs, ui
 	std::vector<fs::path> pathsVec;
 	switch (ParamFlag)
 	{
-
 	case EFLAG_LOC:
 		pathsVec = DoDirIterate(FSCLT::Get().GetExecutePath());
-		
 		break;
 
 	case EFLAG_RECURSIVE:
@@ -186,6 +215,7 @@ bool CPrint::HandleSearch(const std::vector<std::string>& UserArgs, uint8_t Para
 
 	default:
 		log.ReportStatus("No valid Parameter flag found. Use -r or -loc flag.", MessageType::EERROR);
+		return false;
 		break;
 	}
 
@@ -256,9 +286,4 @@ std::vector<std::filesystem::path> CPrint::DoDirIterate(const std::filesystem::p
 		paths.push_back(item);
 	}
 	return paths;
-}
-bool CPrint::CheckSameFlags(uint8_t base, EFLAG_PARAM params, ...)
-{
-
-	return base & params;
 }

@@ -48,6 +48,9 @@ bool BaseCommand::ParseCommand(const std::vector<std::string>& pattern, std::vec
 		{
 			size_t jumpedOver;
 			std::vector<std::string> paramFlags = ExtractParamFlags(i, jumpedOver);
+			if (paramFlags.empty())
+				continue;
+
 			paramFlag = GetParamFlagsAsFlag(paramFlags);
 			i += jumpedOver - 1;
 

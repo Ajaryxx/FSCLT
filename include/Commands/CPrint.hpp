@@ -28,8 +28,7 @@ private:
 
 	bool CheckSearchRecursive(const std::string& arg);
 
-	bool CheckSameFlags(uint8_t base, EFLAG_PARAM params, ...);
-
+	//Prints out all elements with a specific name
 	bool PrintAllEqualNamesInArgumentList(const std::vector<std::string>& args, const std::vector<std::filesystem::path>& paths);
 
 	std::vector<std::filesystem::path> DoRecursiveDirIterate(const std::filesystem::path& searchPath) const;
