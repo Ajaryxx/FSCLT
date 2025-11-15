@@ -225,7 +225,7 @@ bool CPrint::HandleSearch(const std::vector<std::string>& UserArgs, uint8_t Para
 		bool found = false;
 		for (const auto& item : dirIter)
 		{
-			if (item.stem().string() == UserArgs[i])
+			if (item.string().find(UserArgs[i]) != std::string::npos)
 			{
 				found = true;
 				log.SendMessage("File or Directory: [" + UserArgs[i] + "] exists in path: " + item.string());
@@ -248,11 +248,10 @@ bool CPrint::PrintAllEqualNamesInArgumentList(const std::vector<std::string>& ar
 			bool exists = false;
 			for (const auto& item : paths)
 			{
-				if (item.stem().string() == arg)
+				if(item.stem().string() == arg)
 				{
 					OutputLog::Get().SendMessage(FilesystemFormatHelper::Get().FormatDirectoryInfo(item));
 					exists = true;
-
 				}
 			}
 			if (!exists)
