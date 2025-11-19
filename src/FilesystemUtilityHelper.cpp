@@ -1,15 +1,15 @@
 #include "PCH.hpp"
-#include "FilesystemFormatHelper.hpp"
+#include "FilesystemUtilityHelper.hpp"
 #include "OutputLog.hpp"
 
 namespace fs = std::filesystem;
 
-FilesystemFormatHelper::FilesystemFormatHelper()
+FilesystemUtilityHelper::FilesystemUtilityHelper()
 {
 	this->m_filesystemUtility = this;
 }
 
-std::string FilesystemFormatHelper::FormatDirectoryInfo(const std::vector<std::filesystem::path>& vec)
+std::string FilesystemUtilityHelper::FormatDirectoryInfo(const std::vector<std::filesystem::path>& vec)
 {
 	std::string outStr;
 
@@ -36,7 +36,7 @@ std::string FilesystemFormatHelper::FormatDirectoryInfo(const std::vector<std::f
 
 	return outStr;
 }
-std::string FilesystemFormatHelper::FormatDirectoryInfo(const std::filesystem::path& path)
+std::string FilesystemUtilityHelper::FormatDirectoryInfo(const std::filesystem::path& path)
 {
 	OutputLog::Get().Seperate();
 
@@ -61,7 +61,7 @@ std::string FilesystemFormatHelper::FormatDirectoryInfo(const std::filesystem::p
 	return outStr;
 }
 //get the size of thise Element
-std::string FilesystemFormatHelper::GetElementSize(const std::filesystem::path& dir, ConvertUnit unit)
+std::string FilesystemUtilityHelper::GetElementSize(const std::filesystem::path& dir, EConvertUnit unit)
 {
 	if (IsProtected(dir))
 	{
@@ -85,7 +85,7 @@ std::string FilesystemFormatHelper::GetElementSize(const std::filesystem::path& 
 
 	return sizeStr;
 }
-std::string FilesystemFormatHelper::RemoveDecimalZeros(const std::string& bytesStr)
+std::string FilesystemUtilityHelper::RemoveDecimalZeros(const std::string& bytesStr)
 {
 	std::string nonDecimalString = bytesStr;
 
@@ -106,7 +106,7 @@ std::string FilesystemFormatHelper::RemoveDecimalZeros(const std::string& bytesS
 
 	return nonDecimalString;
 }
-std::string FilesystemFormatHelper::ConvertBytesInUnit(uintmax_t bytes, ConvertUnit unit)
+std::string FilesystemUtilityHelper::ConvertBytesInUnit(uintmax_t bytes, EConvertUnit unit)
 {
 	double convertedUnit = 0.f;
 	double sizef = static_cast<double>(bytes);
@@ -114,23 +114,23 @@ std::string FilesystemFormatHelper::ConvertBytesInUnit(uintmax_t bytes, ConvertU
 
 	switch (unit)
 	{
-	case ConvertUnit::KILOBYTE:
+	case EConvertUnit::KILOBYTE:
 		convertedUnit = sizef / pow(1024, 1);
 		unitStr = "KiB";
 		break;
-	case ConvertUnit::MEGABYTE:
+	case EConvertUnit::MEGABYTE:
 		convertedUnit = sizef / pow(1024, 2);
 		unitStr = "MiB";
 		break;
-	case ConvertUnit::GIGABYTE:
+	case EConvertUnit::GIGABYTE:
 		convertedUnit = sizef / pow(1024, 3);
 		unitStr = "GiB";
 		break;
-	case ConvertUnit::TERABYTE:
+	case EConvertUnit::TERABYTE:
 		convertedUnit = sizef / pow(1024, 4);
 		unitStr = "TiB";
 		break;
-	case ConvertUnit::AUTO:
+	case EConvertUnit::AUTO:
 		convertedUnit = CalculateAutoSizeUnit(bytes, unitStr);
 		break;
 	default:
@@ -143,7 +143,7 @@ std::string FilesystemFormatHelper::ConvertBytesInUnit(uintmax_t bytes, ConvertU
 	std::string strConvertUnit = std::to_string(convertedUnit).append(" ").append(unitStr);
 	return strConvertUnit;
 }
-double FilesystemFormatHelper::CalculateAutoSizeUnit(uintmax_t bytes, std::string& unitStr)
+double FilesystemUtilityHelper::CalculateAutoSizeUnit(uintmax_t bytes, std::string& unitStr)
 {
 	double convertedUnit = 0;
 	double sizef = static_cast<float>(bytes);
@@ -180,7 +180,7 @@ double FilesystemFormatHelper::CalculateAutoSizeUnit(uintmax_t bytes, std::strin
 	}
 	return convertedUnit;
 }
-uintmax_t FilesystemFormatHelper::CountFolderSize(const std::filesystem::path& dir)
+uintmax_t FilesystemUtilityHelper::CountFolderSize(const std::filesystem::path& dir)
 {
 	uintmax_t count = 0;
 	if (IsProtected(dir))
@@ -203,7 +203,7 @@ uintmax_t FilesystemFormatHelper::CountFolderSize(const std::filesystem::path& d
 
 	return count;
 }
-void FilesystemFormatHelper::CountFolderElements(const std::filesystem::path& dir, uint32_t& folderCount, uint32_t& fileCount)
+void FilesystemUtilityHelper::CountFolderElements(const std::filesystem::path& dir, uint32_t& folderCount, uint32_t& fileCount)
 {
 	uint32_t DirCounter = 0; 
 	uint32_t FileCounter = 0;
@@ -237,7 +237,7 @@ void FilesystemFormatHelper::CountFolderElements(const std::filesystem::path& di
 	folderCount = DirCounter;
 	fileCount = FileCounter;
 }
-std::string FilesystemFormatHelper::GetModifyTime(const std::filesystem::path& path)
+std::string FilesystemUtilityHelper::GetModifyTime(const std::filesystem::path& path)
 {
 	auto clock = std::chrono::clock_cast<std::chrono::system_clock, std::chrono::file_clock>(fs::last_write_time(path));
 
@@ -256,7 +256,7 @@ std::string FilesystemFormatHelper::GetModifyTime(const std::filesystem::path& p
 
 	return strTime;
 }
-std::string FilesystemFormatHelper::GetElementType(const std::filesystem::path& path)
+std::string FilesystemUtilityHelper::GetElementType(const std::filesystem::path& path)
 {
 	if (fs::is_directory(path))
 	{
@@ -278,11 +278,11 @@ std::string FilesystemFormatHelper::GetElementType(const std::filesystem::path& 
 
 	return std::string("[UNDEFINED]");
 }
-bool FilesystemFormatHelper::InRange(double base, double min, double max) const
+bool FilesystemUtilityHelper::InRange(double base, double min, double max) const
 {
 	return base >= min && base < max;
 }
-bool FilesystemFormatHelper::IsProtected(const std::filesystem::path& path) const
+bool FilesystemUtilityHelper::IsProtected(const std::filesystem::path& path) const
 {
 #ifdef _WIN32
 	
@@ -293,4 +293,35 @@ bool FilesystemFormatHelper::IsProtected(const std::filesystem::path& path) cons
 #endif // _WIN32
 
 	return false;
+}
+
+bool FilesystemUtilityHelper::CheckPathVectorSize(int32_t size, const std::vector<std::filesystem::path>& vec, ECheckSizeType checkType, const std::string& additionalMessage) const
+{
+	bool IsTrue = false;
+	switch (checkType)
+	{
+		case ECheckSizeType::EQUAL:
+			IsTrue = size == vec.size();
+			break;
+		case ECheckSizeType::GREATER_THAN:
+			IsTrue = size <= vec.size();
+			break;
+		case ECheckSizeType::LESS_THAN:
+			IsTrue = size >= vec.size();
+			break;
+		case ECheckSizeType::GREATER:
+			IsTrue = size < vec.size();
+			break;
+		case ECheckSizeType::LESS:
+			IsTrue = size > vec.size();
+			break;
+		default:
+			OutputLog::Get().ReportStatus("Invalid check type", MessageType::EERROR);
+			IsTrue = false;
+			break;
+	}
+	if (IsTrue)
+		OutputLog::Get().ReportStatus("More than " + std::to_string(size) + " elements found. " + additionalMessage, MessageType::WARNING);
+
+	return IsTrue;
 }

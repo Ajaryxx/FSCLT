@@ -3,6 +3,8 @@
 
 constexpr const char* CMD_NAME = "print";
 
+constexpr const char* HANDLE_SEARCH = "HANDLE_SEARCH";
+
 class CPrint : public BaseCommand
 {
 public:
@@ -33,5 +35,9 @@ private:
 
 	std::vector<std::filesystem::path> DoRecursiveDirIterate(const std::filesystem::path& searchPath) const;
 	std::vector<std::filesystem::path> DoDirIterate(const std::filesystem::path& searchPath) const;
+
+private:
+
+	
 
 };

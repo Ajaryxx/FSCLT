@@ -2,8 +2,9 @@
 #include "Commands/CPrint.hpp"
 #include "FSCLT.hpp"
 #include "OutputLog.hpp"
-#include "FilesystemFormatHelper.hpp"
+#include "FilesystemUtilityHelper.hpp"
 #include "config.hpp"
+#include "ProceedDialog.h"
 
 namespace fs = std::filesystem;
 
@@ -112,13 +113,14 @@ bool CPrint::HandlePrintCommandList(const std::vector<std::string>& UserArgs, ui
 bool CPrint::HandlePrintListDirectory(const std::vector<std::string>& UserArgs, uint8_t ParamFlag)
 {
 	OutputLog& log = OutputLog::Get();
-	FilesystemFormatHelper& FormatHelper = FilesystemFormatHelper::Get();
+	FilesystemUtilityHelper& UtilityHelper = FilesystemUtilityHelper::Get();
 
 	if (ParamFlag & EFLAG_PARAM::EFLAG_LOC && ParamFlag & EFLAG_PARAM::EFLAG_RECURSIVE)
 	{
 		log.ReportStatus("You cant combine both flags: [-loc] and [-r].", MessageType::EERROR);
 		return false;
 	}
+
 	std::vector<fs::path> pathBuffer;
 	switch (ParamFlag)
 	{
@@ -135,12 +137,12 @@ bool CPrint::HandlePrintListDirectory(const std::vector<std::string>& UserArgs, 
 		return false;
 		break;
 	}
-
+	std::vector<fs::path> foundElements;
 	try
 	{
 		for (const auto& item : pathBuffer)
 		{
-			log.SendMessage(FormatHelper.FormatDirectoryInfo(item));
+			foundElements.push_back(item);
 		}
 	}
 	catch (const fs::filesystem_error& err)
@@ -149,13 +151,19 @@ bool CPrint::HandlePrintListDirectory(const std::vector<std::string>& UserArgs, 
 		return false;
 	}
 
+	if (UtilityHelper.CheckPathVectorSize(100, foundElements, ECheckSizeType::GREATER_THAN, "Are you sure to print all elements out? (it takes a long time to print all elements out)"))
+	{
+		ProceedDialog::Get().AskDialog("Are you sure to print out all elements?", MessageType::WARNING);
+	}
+	
+
 	return true;
 }
 
 bool CPrint::HandlePrintInfoElement(const std::vector<std::string>& UserArgs, uint8_t ParamFlag)
 {
 	OutputLog& log = OutputLog::Get();
-	FilesystemFormatHelper& FormatHelper = FilesystemFormatHelper::Get();
+	FilesystemUtilityHelper& FormatHelper = FilesystemUtilityHelper::Get();
 	
 	if (ParamFlag & EFLAG_PARAM::EFLAG_LOC && ParamFlag & EFLAG_PARAM::EFLAG_RECURSIVE)
 	{
@@ -189,10 +197,10 @@ bool CPrint::HandlePrintInfoElement(const std::vector<std::string>& UserArgs, ui
 bool CPrint::HandleSearch(const std::vector<std::string>& UserArgs, uint8_t ParamFlag)
 {
 	OutputLog& log = OutputLog::Get();
-	FilesystemFormatHelper& FormatHelper = FilesystemFormatHelper::Get();
+	FilesystemUtilityHelper& FileUtilityHelper = FilesystemUtilityHelper::Get();
 	const fs::path executePath = FSCLT::Get().GetExecutePath();
-
-	if (!PrintAndCheckParemetersFound(UserArgs, "Print handle search"))
+	
+	if (!PrintAndCheckParemetersFound(UserArgs, HANDLE_SEARCH))
 		return false;
 
 	if (ParamFlag & EFLAG_PARAM::EFLAG_RECURSIVE && ParamFlag & EFLAG_PARAM::EFLAG_LOC)
@@ -219,6 +227,7 @@ bool CPrint::HandleSearch(const std::vector<std::string>& UserArgs, uint8_t Para
 		break;
 	}
 
+	std::vector<fs::path> foundElements;
 	//search
 	for (size_t i = 0; i < UserArgs.size(); i++)
 	{
@@ -228,7 +237,7 @@ bool CPrint::HandleSearch(const std::vector<std::string>& UserArgs, uint8_t Para
 			if (item.string().find(UserArgs[i]) != std::string::npos)
 			{
 				found = true;
-				log.SendMessage("File or Directory: [" + UserArgs[i] + "] exists in path: " + item.string());
+				foundElements.push_back(item);
 			}
 		}
 		if (!found)
@@ -236,7 +245,9 @@ bool CPrint::HandleSearch(const std::vector<std::string>& UserArgs, uint8_t Para
 			log.SendMessage("File or Directory: [" + UserArgs[i] + "] doenst exits");
 		}
 	}
-	
+	if (FileUtilityHelper.CheckPathVectorSize(100, foundElements, ECheckSizeType::GREATER_THAN, "Please be more specific with the search name."))
+		return true;
+
 	return true;
 }
 bool CPrint::PrintAllEqualNamesInArgumentList(const std::vector<std::string>& args, const std::vector<std::filesystem::path>& paths)
@@ -250,7 +261,7 @@ bool CPrint::PrintAllEqualNamesInArgumentList(const std::vector<std::string>& ar
 			{
 				if(item.stem().string() == arg)
 				{
-					OutputLog::Get().SendMessage(FilesystemFormatHelper::Get().FormatDirectoryInfo(item));
+					OutputLog::Get().SendMessage(FilesystemUtilityHelper::Get().FormatDirectoryInfo(item));
 					exists = true;
 				}
 			}

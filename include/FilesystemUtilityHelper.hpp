@@ -1,6 +1,6 @@
 #pragma once
 
-enum class ConvertUnit
+enum class EConvertUnit : uint8_t
 {
 	KILOBYTE,
 	MEGABYTE,
@@ -9,11 +9,21 @@ enum class ConvertUnit
 	//auto detect best unit to cenvert
 	AUTO
 };
+enum class ECheckSizeType : uint8_t
+{
+	EQUAL,
+	GREATER_THAN,
+	LESS_THAN,
+	GREATER,
+	LESS,
 
-class FilesystemFormatHelper
+};
+
+
+class FilesystemUtilityHelper
 {
 public:
-	static FilesystemFormatHelper& Get()
+	static FilesystemUtilityHelper& Get()
 	{
 		return *m_filesystemUtility;
 	}
@@ -32,16 +42,20 @@ public:
 	void CountFolderElements(const std::filesystem::path& dir, uint32_t& folderCount, uint32_t& fileCount);
 
 	//get the size of thise Element
-	std::string GetElementSize(const std::filesystem::path& dir, ConvertUnit unit = ConvertUnit::AUTO);
+	std::string GetElementSize(const std::filesystem::path& dir, EConvertUnit unit = EConvertUnit::AUTO);
 
 	//counts the folder size and returns it as bytes
 	uintmax_t CountFolderSize(const std::filesystem::path& dir);
 
 	//converts bytes in specified unit and returnst it as a string
-	std::string ConvertBytesInUnit(uintmax_t bytes, ConvertUnit unit = ConvertUnit::AUTO);
+	std::string ConvertBytesInUnit(uintmax_t bytes, EConvertUnit unit = EConvertUnit::AUTO);
+
+	//Checks the size of this path vector. Returns true if its bigger than the size
+	//size </>/ <=/>= /== vec
+	bool CheckPathVectorSize(int32_t size, const std::vector<std::filesystem::path>& vecCheckSizeType, ECheckSizeType checkType, const std::string& additionalMessage = "") const;
 
 private:
-	FilesystemFormatHelper();
+	FilesystemUtilityHelper();
 
 	double CalculateAutoSizeUnit(uintmax_t bytes, std::string& unitStr);
 	bool InRange(double base, double min, double max) const;
@@ -49,6 +63,6 @@ private:
 
 	bool IsProtected(const std::filesystem::path& path) const;
 
-	inline static FilesystemFormatHelper* m_filesystemUtility = nullptr;
+	inline static FilesystemUtilityHelper* m_filesystemUtility = nullptr;
 
 };
