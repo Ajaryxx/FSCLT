@@ -57,26 +57,13 @@ bool CPrint::HandlePrintInfoCommands(const std::vector<std::string>& UserArgs, u
 
 	switch (ParamFlag)
 	{
-	case EFLAG_INFO:
+	case EFLAG_INFO: return PrintCommandsWithName(UserArgs); break;
 
-		return PrintCommandsWithName(UserArgs);
+	case EFLAG_LIST: for (const auto& item : FSCLT::Get().GetAllCommands())	item->PrintUsageInfo(); break;
 
-		break;
-
-	case EFLAG_LIST:
-
-		for (const auto& item : FSCLT::Get().GetAllCommands())
-		{
-			item->PrintUsageInfo();
-		}
-
-		break;
-
-	default:
+	default: 
 		log.ReportStatus("No valid Parameter flag found. Use -i or -l flag.", MessageType::EERROR);
-
 		return false;
-
 		break;
 	}
 
@@ -124,25 +111,21 @@ bool CPrint::HandlePrintListDirectory(const std::vector<std::string>& UserArgs, 
 	std::vector<fs::path> pathBuffer;
 	switch (ParamFlag)
 	{
-	case EFLAG_LOC:
-		pathBuffer = DoDirIterate(FSCLT::Get().GetExecutePath());
-		break;
+	case EFLAG_LOC: pathBuffer = DoDirIterate(FSCLT::Get().GetExecutePath()); break;
 
-	case EFLAG_RECURSIVE:
-		pathBuffer = DoRecursiveDirIterate(FSCLT::Get().GetExecutePath());
-		break;
+	case EFLAG_RECURSIVE: pathBuffer = DoRecursiveDirIterate(FSCLT::Get().GetExecutePath()); break;
 
 	default:
 		log.ReportStatus("No valid Parameter flag found. Use -loc or -r flag.", MessageType::EERROR);
 		return false;
 		break;
 	}
-	std::vector<fs::path> foundElements;
+	std::vector<fs::path> FoundElements;
 	try
 	{
 		for (const auto& item : pathBuffer)
 		{
-			foundElements.push_back(item);
+			FoundElements.push_back(item);
 		}
 	}
 	catch (const fs::filesystem_error& err)
@@ -151,11 +134,11 @@ bool CPrint::HandlePrintListDirectory(const std::vector<std::string>& UserArgs, 
 		return false;
 	}
 
-	if (UtilityHelper.CheckPathVectorSize(100, foundElements, ECheckSizeType::GREATER_THAN, "Are you sure to print all elements out? (it takes a long time to print all elements out)"))
+	if (UtilityHelper.CheckPathVectorSize(100, FoundElements, ECheckSizeType::GREATER_THAN, "Are you sure to print all elements out? (it takes a long time to print all elements out)"))
 	{
 		if (Dialog::Get().AskDialog("Are you sure to print out all elements?", MessageType::WARNING) == EReturnTypeDialog::YES)
 		{
-			log.SendMessage(UtilityHelper.FormatDirectoryInfo(foundElements));
+			log.SendMessage(UtilityHelper.FormatDirectoryInfo(FoundElements));
 		}
 	}
 	
@@ -179,13 +162,9 @@ bool CPrint::HandlePrintInfoElement(const std::vector<std::string>& UserArgs, ui
 	std::vector<fs::path> pathsVec;
 	switch (ParamFlag)
 	{
-	case EFLAG_LOC:
-		pathsVec = DoDirIterate(FSCLT::Get().GetExecutePath());
-		break;
+	case EFLAG_LOC: pathsVec = DoDirIterate(FSCLT::Get().GetExecutePath()); break;
 
-	case EFLAG_RECURSIVE:
-		pathsVec = DoRecursiveDirIterate(FSCLT::Get().GetExecutePath());
-		break;
+	case EFLAG_RECURSIVE: pathsVec = DoRecursiveDirIterate(FSCLT::Get().GetExecutePath()); break;
 
 	default:
 		log.ReportStatus("No valid Parameter flag found. Use -loc or -r flag.", MessageType::EERROR);
@@ -215,12 +194,10 @@ bool CPrint::HandleSearch(const std::vector<std::string>& UserArgs, uint8_t Para
 
 	switch (ParamFlag)
 	{
-	case EFLAG_RECURSIVE:
-		dirIter = std::move(DoRecursiveDirIterate(executePath));
+	case EFLAG_RECURSIVE: dirIter = std::move(DoRecursiveDirIterate(executePath));
 		break;
 		
-	case EFLAG_LOC:
-		dirIter = std::move(DoDirIterate(executePath));
+	case EFLAG_LOC: dirIter = std::move(DoDirIterate(executePath));
 		break;
 
 	default:
@@ -252,6 +229,7 @@ bool CPrint::HandleSearch(const std::vector<std::string>& UserArgs, uint8_t Para
 
 	return true;
 }
+
 bool CPrint::PrintAllEqualNamesInArgumentList(const std::vector<std::string>& args, const std::vector<std::filesystem::path>& paths)
 {
 	try

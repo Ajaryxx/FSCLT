@@ -31,6 +31,7 @@ private:
 	bool CheckSearchRecursive(const std::string& arg);
 
 	//Prints out all elements with a specific name
+	//Returns false if an element wasnt found
 	bool PrintAllEqualNamesInArgumentList(const std::vector<std::string>& args, const std::vector<std::filesystem::path>& paths);
 
 	std::vector<std::filesystem::path> DoRecursiveDirIterate(const std::filesystem::path& searchPath) const;

@@ -64,11 +64,11 @@ std::string Dialog::ToLower(const std::string& str) const
 {
 	std::string buffer;
 	buffer.reserve(str.size());
+
 	for (const auto& item : str)
 	{
 		buffer += tolower(item);
 	}
-
 	return buffer;
 }
 std::string Dialog::ToUpper(const std::string& str) const
