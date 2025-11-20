@@ -31,7 +31,7 @@ std::string FilesystemUtilityHelper::FormatDirectoryInfo(const std::vector<std::
 
 		outStr.append("Size: " + GetElementSize(item)).push_back('\n');
 
-		OutputLog::Get().Seperate();
+		outStr.append(SEPERATOR_STR);
 	}
 
 	return outStr;
@@ -55,8 +55,6 @@ std::string FilesystemUtilityHelper::FormatDirectoryInfo(const std::filesystem::
 		outStr.append("File count: " + std::to_string(fileCount)).push_back('\n');
 	}
 	outStr.append("Size: " + GetElementSize(path)).push_back('\n');
-
-	
 
 	return outStr;
 }

@@ -4,7 +4,7 @@
 #include "OutputLog.hpp"
 #include "FilesystemUtilityHelper.hpp"
 #include "config.hpp"
-#include "ProceedDialog.h"
+#include "Dialog.h"
 
 namespace fs = std::filesystem;
 
@@ -153,10 +153,12 @@ bool CPrint::HandlePrintListDirectory(const std::vector<std::string>& UserArgs, 
 
 	if (UtilityHelper.CheckPathVectorSize(100, foundElements, ECheckSizeType::GREATER_THAN, "Are you sure to print all elements out? (it takes a long time to print all elements out)"))
 	{
-		ProceedDialog::Get().AskDialog("Are you sure to print out all elements?", MessageType::WARNING);
+		if (Dialog::Get().AskDialog("Are you sure to print out all elements?", MessageType::WARNING) == EReturnTypeDialog::YES)
+		{
+			log.SendMessage(UtilityHelper.FormatDirectoryInfo(foundElements));
+		}
 	}
 	
-
 	return true;
 }
 

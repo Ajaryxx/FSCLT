@@ -17,6 +17,8 @@ enum class MessageType : uint8_t
 	WARNING,
 	EERROR
 };
+constexpr const char* SEPERATOR_STR = "\n-------------------------------\n";
+
 class OutputLog
 {
 public:
