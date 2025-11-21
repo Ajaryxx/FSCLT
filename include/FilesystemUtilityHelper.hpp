@@ -36,7 +36,7 @@ public:
 	std::string GetModifyTime(const std::filesystem::path& path);
 	
 	//returns the type of this directory element
-	std::string GetElementType(const std::filesystem::path& path);
+	std::string GetElementExtension(const std::filesystem::path& path);
 
 	//returns the count of files and folders
 	void CountFolderElements(const std::filesystem::path& dir, uint32_t& folderCount, uint32_t& fileCount);
@@ -53,6 +53,9 @@ public:
 	//Checks the size of this path vector. Returns true if its bigger than the size
 	//size </>/ <=/>= /== vec
 	bool CheckPathVectorSize(int32_t size, const std::vector<std::filesystem::path>& vecCheckSizeType, ECheckSizeType checkType, const std::string& additionalMessage = "") const;
+
+	//Check if its a folder or a file
+	std::string CheckElementType(const std::filesystem::path& path) const;
 
 private:
 	FilesystemUtilityHelper();

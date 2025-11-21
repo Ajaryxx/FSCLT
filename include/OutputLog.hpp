@@ -28,7 +28,7 @@ public:
 		return *m_OutputLog;
 	}
 	//For sending a normal message. For e.g to output Filenames
-	void SendMessage(const std::string& message, uint8_t newLines = 0, Color color = Color::WHITE);
+	void SendOutput(const std::string& message, uint8_t newLines = 0, Color color = Color::WHITE);
 	//For sending a status message. For e.g status of a running command
 	void ReportStatus(const std::string& message, MessageType messageType = MessageType::INFO, uint8_t newLines = 1);
 

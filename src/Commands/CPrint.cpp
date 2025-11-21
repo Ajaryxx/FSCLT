@@ -4,262 +4,86 @@
 #include "OutputLog.hpp"
 #include "FilesystemUtilityHelper.hpp"
 #include "config.hpp"
-#include "Dialog.h"
 
 namespace fs = std::filesystem;
 
 CPrint::CPrint(const std::vector<std::string>& args) : BaseCommand(CMD_NAME, args)
 {
-	//prints out the tool version
-	BIND_COMMAND(std::vector<std::string>({ "info", "version" }), HandlePrintVersion);
+	//prints out the current Tool version
+	BIND_COMMAND(std::vector<std::string>({ "info", "version"}), HandlePrintOutVersion);
 
-	//prints out the usage of all commands or prints only 1 or more command usage infp 
-	BIND_COMMAND(std::vector<std::string>({ "command", ARG_PARAM_FLAGS, ARG_MULTI_INP }), HandlePrintInfoCommands);
+	//prints out the usage from command(s)
+	BIND_COMMAND(std::vector<std::string>({ "info", "command", ARG_MULTI_INP }), HandlePrintOutCommandInfo);
 
-	//prints out the file or dir info
-	BIND_COMMAND(std::vector<std::string>({ "info", "element", ARG_PARAM_FLAGS, ARG_MULTI_INP }), HandlePrintInfoElement);
-
-	//prints out the file or dir info
-	BIND_COMMAND(std::vector<std::string>({ ARG_PARAM_FLAGS, "dir"}), HandlePrintListDirectory);
-
-	//searches a file and tells if it exists
-	BIND_COMMAND(std::vector<std::string>({ "search", ARG_PARAM_FLAGS, ARG_MULTI_INP }), HandleSearch);
+	//prints out the directory list
+	BIND_COMMAND(std::vector<std::string>({ "list", "dir", ARG_MULTI_INP }), HandlePrintListDirectory);
 }
 
-void CPrint::PrintUsageInfo()
+void CPrint::PrintUsageInfo() const
 {
-	OutputLog::Get().SendMessage(R"(["PRINT"]
-Usage:
-fsclt print info version -> [prints Tool version]
-fsclt print info command [COMMAND_NAMES] -> [prints usage help for command]
-fsclt print list dir [EXTENSION] -> [lists all diretorys with a speficic extension]
-fsclt prints list file [EXTENSION] ->[prints all files with a spefific extension])", 
-1, 
-Color::CYAN);
+	OutputLog::Get().SendOutput("TEST_PRINT");
 }
 
-bool CPrint::HandlePrintVersion(const std::vector<std::string>& UserArgs, uint8_t ParamFlag)
+bool CPrint::HandlePrintOutVersion(const std::vector<std::string>& UserArgs, uint8_t flags)
 {
-	OutputLog::Get().SendMessage(TOOL_VERSION, 1);
-	
+	OutputLog::Get().SendOutput("Tool verion: " + TOOL_VERSION);
 	return true;
 }
 
-bool CPrint::HandlePrintInfoCommands(const std::vector<std::string>& UserArgs, uint8_t ParamFlag)
+bool CPrint::HandlePrintOutCommandInfo(const std::vector<std::string>& UserArgs, uint8_t flags)
 {
+	if (!CheckParemetersFound(UserArgs, "HANDLE_PRINT_CMD_INFO"))
+		return false;
+
 	OutputLog& log = OutputLog::Get();
 
-	if (ParamFlag & EFLAG_PARAM::EFLAG_INFO && ParamFlag & EFLAG_PARAM::EFLAG_LIST)
+	if (UserArgs.size() < 1)
 	{
-		log.ReportStatus("You cant combine both flags: [-i] and [-l].", MessageType::EERROR);
-		return false;
+		//print all
+		const std::vector<BaseCommand*>& cmds = FSCLT::Get().GetAllCommands();
+
+		for (const auto& item : cmds)
+			item->PrintUsageInfo();
 	}
-
-	switch (ParamFlag)
+	else
 	{
-	case EFLAG_INFO: return PrintCommandsWithName(UserArgs); break;
-
-	case EFLAG_LIST: for (const auto& item : FSCLT::Get().GetAllCommands())	item->PrintUsageInfo(); break;
-
-	default: 
-		log.ReportStatus("No valid Parameter flag found. Use -i or -l flag.", MessageType::EERROR);
-		return false;
-		break;
-	}
-
-	return true;
-}
-bool CPrint::PrintCommandsWithName(const std::vector<std::string>& UserArgs)
-{
-	if (!PrintAndCheckParemetersFound(UserArgs, "Print command with name"))
-		return false;
-
-	for (const auto& item : UserArgs)
-	{
-		if (BaseCommand* cmd = FSCLT::Get().GetCommand(item))
+		//print commands with name
+		for (const auto& item : UserArgs)
 		{
-			cmd->PrintUsageInfo();
-		}
-		else
-		{
-			OutputLog::Get().ReportStatus("Couldn't find command: [" + item + "]. Make sure you spelled it correctly.", MessageType::EERROR);
-			return false;
-		}
-	}
-}
+			if (const BaseCommand* command = FSCLT::Get().GetCommand(item))
+				command->PrintUsageInfo();
 
-bool CPrint::HandlePrintCommandList(const std::vector<std::string>& UserArgs, uint8_t ParamFlag)
-{
-	for (const auto& item : FSCLT::Get().GetAllCommands())
-	{
-		item->PrintUsageInfo();
-	}
-	return true;
-}
-
-bool CPrint::HandlePrintListDirectory(const std::vector<std::string>& UserArgs, uint8_t ParamFlag)
-{
-	OutputLog& log = OutputLog::Get();
-	FilesystemUtilityHelper& UtilityHelper = FilesystemUtilityHelper::Get();
-
-	if (ParamFlag & EFLAG_PARAM::EFLAG_LOC && ParamFlag & EFLAG_PARAM::EFLAG_RECURSIVE)
-	{
-		log.ReportStatus("You cant combine both flags: [-loc] and [-r].", MessageType::EERROR);
-		return false;
-	}
-
-	std::vector<fs::path> pathBuffer;
-	switch (ParamFlag)
-	{
-	case EFLAG_LOC: pathBuffer = DoDirIterate(FSCLT::Get().GetExecutePath()); break;
-
-	case EFLAG_RECURSIVE: pathBuffer = DoRecursiveDirIterate(FSCLT::Get().GetExecutePath()); break;
-
-	default:
-		log.ReportStatus("No valid Parameter flag found. Use -loc or -r flag.", MessageType::EERROR);
-		return false;
-		break;
-	}
-	std::vector<fs::path> FoundElements;
-	try
-	{
-		for (const auto& item : pathBuffer)
-		{
-			FoundElements.push_back(item);
-		}
-	}
-	catch (const fs::filesystem_error& err)
-	{
-		log.ReportStatus("ERROR: " + std::string(err.what()), MessageType::EERROR);
-		return false;
-	}
-
-	if (UtilityHelper.CheckPathVectorSize(100, FoundElements, ECheckSizeType::GREATER_THAN, "Are you sure to print all elements out? (it takes a long time to print all elements out)"))
-	{
-		if (Dialog::Get().AskDialog("Are you sure to print out all elements?", MessageType::WARNING) == EReturnTypeDialog::YES)
-		{
-			log.SendMessage(UtilityHelper.FormatDirectoryInfo(FoundElements));
-		}
-	}
-	
-	return true;
-}
-
-bool CPrint::HandlePrintInfoElement(const std::vector<std::string>& UserArgs, uint8_t ParamFlag)
-{
-	OutputLog& log = OutputLog::Get();
-	FilesystemUtilityHelper& FormatHelper = FilesystemUtilityHelper::Get();
-	
-	if (ParamFlag & EFLAG_PARAM::EFLAG_LOC && ParamFlag & EFLAG_PARAM::EFLAG_RECURSIVE)
-	{
-		log.ReportStatus("You cant combine both flags: [-loc] and [-r].", MessageType::EERROR);
-			return false;
-	}
-	
-	if (!PrintAndCheckParemetersFound(UserArgs, "Print Info Element"))
-		return false;
-
-	std::vector<fs::path> pathsVec;
-	switch (ParamFlag)
-	{
-	case EFLAG_LOC: pathsVec = DoDirIterate(FSCLT::Get().GetExecutePath()); break;
-
-	case EFLAG_RECURSIVE: pathsVec = DoRecursiveDirIterate(FSCLT::Get().GetExecutePath()); break;
-
-	default:
-		log.ReportStatus("No valid Parameter flag found. Use -loc or -r flag.", MessageType::EERROR);
-		return false;
-		break;
-	}
-	
-	return PrintAllEqualNamesInArgumentList(UserArgs, pathsVec);
-}
-
-bool CPrint::HandleSearch(const std::vector<std::string>& UserArgs, uint8_t ParamFlag)
-{
-	OutputLog& log = OutputLog::Get();
-	FilesystemUtilityHelper& FileUtilityHelper = FilesystemUtilityHelper::Get();
-	const fs::path executePath = FSCLT::Get().GetExecutePath();
-	
-	if (!PrintAndCheckParemetersFound(UserArgs, HANDLE_SEARCH))
-		return false;
-
-	if (ParamFlag & EFLAG_PARAM::EFLAG_RECURSIVE && ParamFlag & EFLAG_PARAM::EFLAG_LOC)
-	{
-		log.ReportStatus("You cant combine both flags: [-r] and [-loc].", MessageType::EERROR);
-		return false;
-	}
-
-	std::vector<fs::path> dirIter;
-
-	switch (ParamFlag)
-	{
-	case EFLAG_RECURSIVE: dirIter = std::move(DoRecursiveDirIterate(executePath));
-		break;
-		
-	case EFLAG_LOC: dirIter = std::move(DoDirIterate(executePath));
-		break;
-
-	default:
-		log.ReportStatus("No valid Parameter flag found. Use -r or -loc flag.", MessageType::EERROR);
-		return false;
-		break;
-	}
-
-	std::vector<fs::path> foundElements;
-	//search
-	for (size_t i = 0; i < UserArgs.size(); i++)
-	{
-		bool found = false;
-		for (const auto& item : dirIter)
-		{
-			if (item.string().find(UserArgs[i]) != std::string::npos)
+			else
 			{
-				found = true;
-				foundElements.push_back(item);
-			}
-		}
-		if (!found)
-		{
-			log.SendMessage("File or Directory: [" + UserArgs[i] + "] doenst exits");
-		}
-	}
-	if (FileUtilityHelper.CheckPathVectorSize(100, foundElements, ECheckSizeType::GREATER_THAN, "Please be more specific with the search name."))
-		return true;
-
-	return true;
-}
-
-bool CPrint::PrintAllEqualNamesInArgumentList(const std::vector<std::string>& args, const std::vector<std::filesystem::path>& paths)
-{
-	try
-	{
-		for (const auto& arg : args)
-		{
-			bool exists = false;
-			for (const auto& item : paths)
-			{
-				if(item.stem().string() == arg)
-				{
-					OutputLog::Get().SendMessage(FilesystemUtilityHelper::Get().FormatDirectoryInfo(item));
-					exists = true;
-				}
-			}
-			if (!exists)
-			{
-				OutputLog::Get().SendMessage("File or Directory: [" + arg + "] doesnt exists", 1, Color::BLUE);
+				log.ReportStatus("Command: " + item + " wasnt found", MessageType::EERROR);
+				return false;
 			}
 		}
 	}
-	catch (const fs::filesystem_error& err)
-	{
-		OutputLog::Get().ReportStatus("ERROR: " + std::string(err.what()), MessageType::EERROR);
-		return false;
-	}
 
 	return true;
 }
-std::vector<std::filesystem::path> CPrint::DoRecursiveDirIterate(const std::filesystem::path& searchPath) const
+
+bool CPrint::HandlePrintListDirectory(const std::vector<std::string>& UserArgs, uint8_t flags)
+{
+	OutputLog& log = OutputLog::Get();
+	FilesystemUtilityHelper& utilityHelper = FilesystemUtilityHelper::Get();
+
+	std::vector<fs::path> path;
+
+	if (UserArgs.empty())
+	{
+		path = GetDirectoryLocalPaths(FSCLT::Get().GetExecutePath());
+		for (const auto& item : path)
+		{
+			const std::string type = utilityHelper.CheckElementType(item);
+			log.SendOutput("[" + type + "]: " + item.string(), 0, Color::MAGENTA);
+		}
+	}
+	return true;
+}
+
+std::vector<std::filesystem::path> CPrint::GetDirectoryRecursivePaths(const std::filesystem::path& searchPath) const
 {
 	std::vector<fs::path> paths;
 	for (const auto& item : fs::recursive_directory_iterator(searchPath))
@@ -268,7 +92,7 @@ std::vector<std::filesystem::path> CPrint::DoRecursiveDirIterate(const std::file
 	}
 	return paths;
 }
-std::vector<std::filesystem::path> CPrint::DoDirIterate(const std::filesystem::path& searchPath) const
+std::vector<std::filesystem::path> CPrint::GetDirectoryLocalPaths(const std::filesystem::path& searchPath) const
 {
 	std::vector<fs::path> paths;
 	for (const auto& item : fs::directory_iterator(searchPath))

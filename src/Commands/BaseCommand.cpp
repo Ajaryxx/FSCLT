@@ -44,6 +44,9 @@ bool BaseCommand::ParseCommand(const std::vector<std::string>& pattern, std::vec
 
 	for (const auto& item : pattern)
 	{
+		/*if (i >= m_v_args.size())
+			return false;*/
+
 		if (item == ARG_PARAM_FLAGS)
 		{
 			size_t jumpedOver;
@@ -62,7 +65,6 @@ bool BaseCommand::ParseCommand(const std::vector<std::string>& pattern, std::vec
 		else if (item == ARG_MULTI_INP)
 		{
 			std::copy(m_v_args.cbegin() + i, m_v_args.cend(), std::back_inserter(userArgs));
-				
 			break;
 		}
 		else if(item != m_v_args[i])
@@ -96,7 +98,6 @@ std::vector<std::string> BaseCommand::ExtractParamFlags(size_t offset, size_t& j
 			break;
 		}
 	}
-	
 	jumpedOver = ParseJump;
 
 	return extractedFlags;
@@ -131,11 +132,11 @@ uint8_t BaseCommand::GetParamFlagsAsFlag(const std::vector<std::string>& flagsVe
 	
 	return flags;
 }
-bool BaseCommand::PrintAndCheckParemetersFound(const std::vector<std::string>& args, const std::string& commandHandle) const
+bool BaseCommand::CheckParemetersFound(const std::vector<std::string>& args, const std::string& commandHandle) const
 {
 	if (args.empty())
 	{
-		OutputLog::Get().ReportStatus("No valid paremeter(s) for: " + commandHandle, MessageType::EERROR);
+		OutputLog::Get().ReportStatus("No valid paremeter(s) for: " + commandHandle + " found.", MessageType::EERROR);
 		return false;
 	}
 	return true;

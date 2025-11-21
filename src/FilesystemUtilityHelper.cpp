@@ -19,7 +19,7 @@ std::string FilesystemUtilityHelper::FormatDirectoryInfo(const std::vector<std::
 		outStr.append("Name: " + item.filename().string()).push_back('\n');
 		outStr.append("Full path: " + item.string()).push_back('\n');
 		outStr.append("Date modified: " + GetModifyTime(item)).push_back('\n');
-		outStr.append("Type: " + GetElementType(item)).push_back('\n');
+		outStr.append("Type: " + GetElementExtension(item)).push_back('\n');
 
 		if (fs::is_directory(item))
 		{
@@ -45,7 +45,7 @@ std::string FilesystemUtilityHelper::FormatDirectoryInfo(const std::filesystem::
 	outStr.append("Name: " + path.filename().string()).push_back('\n');
 	outStr.append("Full path: " + path.string()).push_back('\n');
 	outStr.append("Date modified: " + GetModifyTime(path)).push_back('\n');
-	outStr.append("Type: " + GetElementType(path)).push_back('\n');
+	outStr.append("Type: " + GetElementExtension(path)).push_back('\n');
 
 	if (fs::is_directory(path))
 	{
@@ -254,7 +254,7 @@ std::string FilesystemUtilityHelper::GetModifyTime(const std::filesystem::path& 
 
 	return strTime;
 }
-std::string FilesystemUtilityHelper::GetElementType(const std::filesystem::path& path)
+std::string FilesystemUtilityHelper::GetElementExtension(const std::filesystem::path& path)
 {
 	if (fs::is_directory(path))
 	{
@@ -322,4 +322,8 @@ bool FilesystemUtilityHelper::CheckPathVectorSize(int32_t size, const std::vecto
 		OutputLog::Get().ReportStatus("More than " + std::to_string(size) + " elements found. " + additionalMessage, MessageType::WARNING);
 
 	return IsTrue;
+}
+std::string FilesystemUtilityHelper::CheckElementType(const std::filesystem::path& path) const
+{
+	return fs::is_directory(path) ? "Folder" : "File";
 }

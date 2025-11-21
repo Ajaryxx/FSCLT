@@ -32,7 +32,7 @@ public:
 		return m_CommandName;
 	}
 
-	virtual void PrintUsageInfo() = 0;
+	virtual void PrintUsageInfo() const = 0;
 	virtual bool Execute();
 
 protected:
@@ -46,8 +46,9 @@ protected:
 	std::vector<std::string> ExtractParamFlags(size_t offset, size_t& jumpedOver);
 
 	uint8_t GetParamFlagsAsFlag(const std::vector<std::string>& flagsVec) const;
-	//Checks if there are paremeters. If no parameters were found it prints a error message
-	bool PrintAndCheckParemetersFound(const std::vector<std::string>& args, const std::string& commandHandle) const;
+
+	//Checks if there are paremeters. If no parameters were found it prints an error message
+	bool CheckParemetersFound(const std::vector<std::string>& args, const std::string& commandHandle) const;
 private:
 	std::string m_CommandName;
 

@@ -7,7 +7,7 @@ OutputLog::OutputLog()
 {
 	m_OutputLog = this;
 }
-void OutputLog::SendMessage(const std::string& message, uint8_t newLines, Color color)
+void OutputLog::SendOutput(const std::string& message, uint8_t newLines, Color color)
 {
 	SetConsoleColor(color);
 
@@ -47,7 +47,7 @@ void OutputLog::ReportStatus(const std::string& message, MessageType messageType
 void OutputLog::Seperate()
 {
 	SetSpace(1);
-	SendMessage("-------------------------------");
+	SendOutput("-------------------------------");
 	SetSpace(1);
 }
 void OutputLog::SetSpace(uint8_t newLines)
