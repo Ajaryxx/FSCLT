@@ -78,7 +78,6 @@ std::string OutputLog::GetMessageTypeString(MessageType messageType)
 	return msgStr;
 }
 
-
 void OutputLog::ResetConsoleColor()
 {
 	std::cout << "\033[0m";
@@ -115,4 +114,31 @@ void OutputLog::SetConsoleColor(Color color)
 			std::cout << "\033[37m";
 			break;
 	}
+}
+
+void OutputLog::PrintList(const std::vector<std::string>& list, const std::string& listName, Color color)
+{
+	std::string outputStr;
+
+	outputStr.append("\n---------------------" + listName + "---------------------\n\n");
+	
+
+	size_t i = 0;
+	for (const auto& item : list)
+	{
+		outputStr.append("[" + std::to_string(i) + "] ");
+		outputStr.append(item).push_back('\n');
+		outputStr.append(MakeSeperatorWithLenght(item.size())).push_back('\n');
+		i++;
+	}
+
+	SendOutput(outputStr, 1, color);
+}
+std::string OutputLog::MakeSeperatorWithLenght(size_t size)
+{
+	std::string sep;
+	for (size_t i = 0; i < size; i++)
+		sep.push_back('-');
+
+	return sep;
 }

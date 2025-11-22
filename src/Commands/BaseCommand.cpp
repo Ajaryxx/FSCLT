@@ -44,34 +44,27 @@ bool BaseCommand::ParseCommand(const std::vector<std::string>& pattern, std::vec
 
 	for (const auto& item : pattern)
 	{
-		/*if (i >= m_v_args.size())
-			return false;*/
-
 		if (item == ARG_PARAM_FLAGS)
 		{
-			size_t jumpedOver;
-			std::vector<std::string> paramFlags = ExtractParamFlags(i, jumpedOver);
-			if (paramFlags.empty())
-				continue;
+			size_t jumped;
+			paramFlag = GetParamFlagsAsFlag(ExtractParamFlags(i, jumped));
 
-			paramFlag = GetParamFlagsAsFlag(paramFlags);
-			i += jumpedOver - 1;
-
+			i += jumped;
+			continue;
 		}
 		else if (item == ARG_USER_INP)
 		{
-			userArgs.push_back(item);
+			userArgs.push_back(m_v_args[i]);
 		}
 		else if (item == ARG_MULTI_INP)
 		{
-			std::copy(m_v_args.cbegin() + i, m_v_args.cend(), std::back_inserter(userArgs));
+			std::copy(m_v_args.begin() + i, m_v_args.end(), std::back_inserter(userArgs));
 			break;
 		}
-		else if(item != m_v_args[i])
-		{
+		else if (i >= m_v_args.size() || item != m_v_args[i])
 			return false;
-		}
-		i++;
+
+			i++;
 	}
 	
 	return true;

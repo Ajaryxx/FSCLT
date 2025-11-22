@@ -17,7 +17,6 @@ enum class MessageType : uint8_t
 	WARNING,
 	EERROR
 };
-constexpr const char* SEPERATOR_STR = "\n-------------------------------\n";
 
 class OutputLog
 {
@@ -34,16 +33,19 @@ public:
 
 	void SetSpace(uint8_t newLines);
 	void Seperate();
-	void SetConsoleColor(Color color);
-	//default color is white
-	void ResetConsoleColor();
 
+	void PrintList(const std::vector<std::string>& list, const std::string& listName, Color color = Color::WHITE);
 
 private:
 	std::string GetMessageTypeString(MessageType messageType);
 
 	OutputLog();
 	~OutputLog() = default;
+
+	std::string MakeSeperatorWithLenght(size_t size);
+	void SetConsoleColor(Color color);
+	//default color is white
+	void ResetConsoleColor();
 
 	inline static OutputLog* m_OutputLog = nullptr;
 };

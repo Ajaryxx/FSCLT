@@ -70,15 +70,16 @@ bool CPrint::HandlePrintListDirectory(const std::vector<std::string>& UserArgs, 
 	FilesystemUtilityHelper& utilityHelper = FilesystemUtilityHelper::Get();
 
 	std::vector<fs::path> path;
-
+	log.SetSpace(1);
 	if (UserArgs.empty())
 	{
 		path = GetDirectoryLocalPaths(FSCLT::Get().GetExecutePath());
+		std::vector<std::string> stringPaths(path.size());
+		
 		for (const auto& item : path)
-		{
-			const std::string type = utilityHelper.CheckElementType(item);
-			log.SendOutput("[" + type + "]: " + item.string(), 0, Color::MAGENTA);
-		}
+			std::transform(path.begin(), path.end(), stringPaths.begin(), [&](const fs::path& str) { return str.string(); });
+
+		log.PrintList(stringPaths, "Directory List", Color::MAGENTA);
 	}
 	return true;
 }

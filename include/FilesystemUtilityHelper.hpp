@@ -28,7 +28,7 @@ public:
 		return *m_filesystemUtility;
 	}
 	//returns the info as a string
-	std::string FormatDirectoryInfo(const std::vector<std::filesystem::path>& vec);
+	std::vector<std::string> FormatDirectoryInfo(const std::vector<std::filesystem::path>& vec);
 	//returns the info as a string
 	std::string FormatDirectoryInfo(const std::filesystem::path& path);
 

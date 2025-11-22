@@ -9,13 +9,13 @@ FilesystemUtilityHelper::FilesystemUtilityHelper()
 	this->m_filesystemUtility = this;
 }
 
-std::string FilesystemUtilityHelper::FormatDirectoryInfo(const std::vector<std::filesystem::path>& vec)
+std::vector<std::string> FilesystemUtilityHelper::FormatDirectoryInfo(const std::vector<std::filesystem::path>& vec)
 {
-	std::string outStr;
-
+	
+	std::vector<std::string> outVec;
 	for (const auto& item : vec)
 	{
-		
+		std::string outStr;
 		outStr.append("Name: " + item.filename().string()).push_back('\n');
 		outStr.append("Full path: " + item.string()).push_back('\n');
 		outStr.append("Date modified: " + GetModifyTime(item)).push_back('\n');
@@ -31,15 +31,13 @@ std::string FilesystemUtilityHelper::FormatDirectoryInfo(const std::vector<std::
 
 		outStr.append("Size: " + GetElementSize(item)).push_back('\n');
 
-		outStr.append(SEPERATOR_STR);
+		outVec.push_back(outStr);
 	}
 
-	return outStr;
+	return outVec;
 }
 std::string FilesystemUtilityHelper::FormatDirectoryInfo(const std::filesystem::path& path)
 {
-	OutputLog::Get().Seperate();
-
 	std::string outStr;
 
 	outStr.append("Name: " + path.filename().string()).push_back('\n');
