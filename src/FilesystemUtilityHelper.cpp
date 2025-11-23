@@ -11,7 +11,6 @@ FilesystemUtilityHelper::FilesystemUtilityHelper()
 
 std::vector<std::string> FilesystemUtilityHelper::FormatDirectoryInfo(const std::vector<std::filesystem::path>& vec)
 {
-	
 	std::vector<std::string> outVec;
 	for (const auto& item : vec)
 	{
@@ -64,18 +63,14 @@ std::string FilesystemUtilityHelper::GetElementSize(const std::filesystem::path&
 		OutputLog::Get().ReportStatus("[" + dir.filename().string() + "] is a protected file/folder. Can't indetify size.", MessageType::WARNING);
 		return std::string("UNDEFINED");
 	}
-	
 	std::string sizeStr;
 	uintmax_t SizeBytes;
+
 	if (fs::is_directory(dir))
-	{
-		
 		SizeBytes = CountFolderSize(dir);
-	}
 	else
-	{
 		SizeBytes = fs::file_size(dir);
-	}
+
 	sizeStr = ConvertBytesInUnit(SizeBytes, unit);
 	sizeStr = RemoveDecimalZeros(sizeStr);
 

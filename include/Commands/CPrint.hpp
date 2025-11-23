@@ -1,6 +1,5 @@
 #pragma once
 #include "Commands/BaseCommand.hpp"
-#include "Dialog.h"
 
 constexpr const char* CMD_NAME = "print";
 

@@ -82,6 +82,7 @@ void OutputLog::ResetConsoleColor()
 {
 	std::cout << "\033[0m";
 }
+
 void OutputLog::SetConsoleColor(Color color)
 {
 	ResetConsoleColor();
@@ -122,8 +123,7 @@ void OutputLog::PrintList(const std::vector<std::string>& list, const std::strin
 
 	outputStr.append("\n---------------------" + listName + "---------------------\n\n");
 	
-
-	size_t i = 0;
+	size_t i = 1;
 	for (const auto& item : list)
 	{
 		outputStr.append("[" + std::to_string(i) + "] ");

@@ -70,14 +70,26 @@ bool CPrint::HandlePrintListDirectory(const std::vector<std::string>& UserArgs, 
 	FilesystemUtilityHelper& utilityHelper = FilesystemUtilityHelper::Get();
 
 	std::vector<fs::path> path;
-	log.SetSpace(1);
 	if (UserArgs.empty())
 	{
 		path = GetDirectoryLocalPaths(FSCLT::Get().GetExecutePath());
 		std::vector<std::string> stringPaths(path.size());
 		
 		for (const auto& item : path)
-			std::transform(path.begin(), path.end(), stringPaths.begin(), [&](const fs::path& str) { return str.string(); });
+			std::transform(path.begin(), path.end(), stringPaths.begin(), [&](const fs::path& str) 
+				{ 
+					
+					std::string strPath = str.string();
+					std::string type;
+					if (fs::is_directory(strPath))
+						type = "[Folder] ";
+					else
+						type = "[File] ";
+					
+					strPath.insert(0, type);
+
+					return strPath;
+				});
 
 		log.PrintList(stringPaths, "Directory List", Color::MAGENTA);
 	}
@@ -93,6 +105,7 @@ std::vector<std::filesystem::path> CPrint::GetDirectoryRecursivePaths(const std:
 	}
 	return paths;
 }
+
 std::vector<std::filesystem::path> CPrint::GetDirectoryLocalPaths(const std::filesystem::path& searchPath) const
 {
 	std::vector<fs::path> paths;
