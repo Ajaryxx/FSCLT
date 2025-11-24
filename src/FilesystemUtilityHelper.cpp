@@ -81,7 +81,7 @@ std::string FilesystemUtilityHelper::RemoveDecimalZeros(const std::string& bytes
 	std::string nonDecimalString = bytesStr;
 
 	//jump over the 2 numbers before the dot
-	const int StartPos = nonDecimalString.find('.') + 2;
+	const int StartPos = nonDecimalString.find(',') + 2;
 	
 	for (auto it = nonDecimalString.begin() + StartPos; it != nonDecimalString.end();)
 	{

@@ -24,5 +24,6 @@ private:
 	bool HandlePrintOutVersion(const std::vector<std::string>& UserArgs, uint8_t flags);
 	bool HandlePrintOutCommandInfo(const std::vector<std::string>& UserArgs, uint8_t flags);
 	bool HandlePrintListDirectory(const std::vector<std::string>& UserArgs, uint8_t flags);
+	bool HandlePrintInfoElement(const std::vector<std::string>& UserArgs, uint8_t flags);
 
 };

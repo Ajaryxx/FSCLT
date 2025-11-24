@@ -17,6 +17,9 @@ CPrint::CPrint(const std::vector<std::string>& args) : BaseCommand(CMD_NAME, arg
 
 	//prints out the directory list
 	BIND_COMMAND(std::vector<std::string>({ "list", "dir", ARG_MULTI_INP }), HandlePrintListDirectory);
+
+	//prints out the info if this/these element(s)
+	BIND_COMMAND(std::vector<std::string>({ "info", "element", ARG_MULTI_INP }), HandlePrintInfoElement);
 }
 
 void CPrint::PrintUsageInfo() const
@@ -36,8 +39,9 @@ bool CPrint::HandlePrintOutCommandInfo(const std::vector<std::string>& UserArgs,
 		return false;
 
 	OutputLog& log = OutputLog::Get();
+	const bool PrintAll = UserArgs[0] == "all";
 
-	if (UserArgs.size() < 1)
+	if (PrintAll)
 	{
 		//print all
 		const std::vector<BaseCommand*>& cmds = FSCLT::Get().GetAllCommands();
@@ -94,6 +98,35 @@ bool CPrint::HandlePrintListDirectory(const std::vector<std::string>& UserArgs, 
 		log.PrintList(stringPaths, "Directory List", Color::MAGENTA);
 	}
 	return true;
+}
+
+bool CPrint::HandlePrintInfoElement(const std::vector<std::string>& UserArgs, uint8_t flags)
+{
+	if (!CheckParemetersFound(UserArgs, "HANDLE_PRINT_INFO_ELEMENT"))
+		return false;
+
+	OutputLog& log = OutputLog::Get();
+
+	for (const auto& arg : UserArgs)
+	{
+		bool Found = false;
+		for (const auto& element : GetDirectoryLocalPaths(FSCLT::Get().GetExecutePath()))
+		{
+			if (element.stem() == arg)
+			{
+				log.SendOutput(FilesystemUtilityHelper::Get().FormatDirectoryInfo(element));
+				Found = true;
+			}
+		}
+		if (!Found)
+		{
+			log.ReportStatus("Element name: [" + arg + "] wasn't found.", MessageType::EERROR);
+			return false;
+		}
+	}
+
+	return true;
+
 }
 
 std::vector<std::filesystem::path> CPrint::GetDirectoryRecursivePaths(const std::filesystem::path& searchPath) const
