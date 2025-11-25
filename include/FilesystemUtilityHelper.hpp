@@ -57,6 +57,9 @@ public:
 	//Check if its a folder or a file
 	std::string CheckElementType(const std::filesystem::path& path) const;
 
+	std::vector<std::filesystem::path> GetDirectoryRecursivePaths(const std::filesystem::path& searchPath) const;
+	std::vector<std::filesystem::path> GetDirectoryLocalPaths(const std::filesystem::path& searchPath) const;
+
 private:
 	FilesystemUtilityHelper();
 

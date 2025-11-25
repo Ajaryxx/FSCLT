@@ -1,4 +1,7 @@
 #pragma once
 
-//Prints usfull information
+//Prints usefull information
 #include "Commands/CPrint.hpp"
+
+//Search
+#include "Commands/CSearch.hpp"

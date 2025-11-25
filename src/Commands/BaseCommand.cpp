@@ -47,8 +47,10 @@ bool BaseCommand::ParseCommand(const std::vector<std::string>& pattern, std::vec
 		if (item == ARG_PARAM_FLAGS)
 		{
 			size_t jumped;
-			paramFlag = GetParamFlagsAsFlag(ExtractParamFlags(i, jumped));
+			std::vector<std::string> vec = ExtractParamFlags(i, jumped);
 
+			paramFlag = GetParamFlagsAsFlag(vec);
+		
 			i += jumped;
 			continue;
 		}
@@ -72,9 +74,13 @@ bool BaseCommand::ParseCommand(const std::vector<std::string>& pattern, std::vec
 std::vector<std::string> BaseCommand::ExtractParamFlags(size_t offset, size_t& jumpedOver)
 {
 	std::vector<std::string> extractedFlags;
+	jumpedOver = 0;
 
 	size_t ParseJump = 0;
-	if (m_v_args[offset][0] != '-')
+
+	auto it = m_v_args.begin() + offset;
+
+	if (it == m_v_args.end() || m_v_args[offset][0] != '-')
 		return extractedFlags;
 
 	for (auto it = m_v_args.cbegin() + offset; it != m_v_args.cend(); it++)

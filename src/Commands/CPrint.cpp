@@ -10,16 +10,16 @@ namespace fs = std::filesystem;
 CPrint::CPrint(const std::vector<std::string>& args) : BaseCommand(CMD_NAME, args)
 {
 	//prints out the current Tool version
-	BIND_COMMAND(std::vector<std::string>({ "info", "version"}), HandlePrintOutVersion);
+	BIND_COMMAND(std::vector<std::string>({ "info", "version"}), CPrint, HandlePrintOutVersion);
 
 	//prints out the usage from command(s)
-	BIND_COMMAND(std::vector<std::string>({ "info", "command", ARG_MULTI_INP }), HandlePrintOutCommandInfo);
+	BIND_COMMAND(std::vector<std::string>({ "info", "command", ARG_MULTI_INP }), CPrint, HandlePrintOutCommandInfo);
 
 	//prints out the directory list
-	BIND_COMMAND(std::vector<std::string>({ "list", "dir", ARG_MULTI_INP }), HandlePrintListDirectory);
+	BIND_COMMAND(std::vector<std::string>({ "list", "dir", ARG_MULTI_INP }), CPrint, HandlePrintListDirectory);
 
 	//prints out the info if this/these element(s)
-	BIND_COMMAND(std::vector<std::string>({ "info", "element", ARG_MULTI_INP }), HandlePrintInfoElement);
+	BIND_COMMAND(std::vector<std::string>({ "info", "element", ARG_MULTI_INP }), CPrint, HandlePrintInfoElement);
 }
 
 void CPrint::PrintUsageInfo() const
@@ -35,11 +35,12 @@ bool CPrint::HandlePrintOutVersion(const std::vector<std::string>& UserArgs, uin
 
 bool CPrint::HandlePrintOutCommandInfo(const std::vector<std::string>& UserArgs, uint8_t flags)
 {
+	size_t size;
 	if (!CheckParemetersFound(UserArgs, "HANDLE_PRINT_CMD_INFO"))
 		return false;
 
 	OutputLog& log = OutputLog::Get();
-	const bool PrintAll = UserArgs[0] == "all";
+	const bool PrintAll = UserArgs.size() == 1 && UserArgs[0] == "all";
 
 	if (PrintAll)
 	{
@@ -76,7 +77,7 @@ bool CPrint::HandlePrintListDirectory(const std::vector<std::string>& UserArgs, 
 	std::vector<fs::path> path;
 	if (UserArgs.empty())
 	{
-		path = GetDirectoryLocalPaths(FSCLT::Get().GetExecutePath());
+		path = utilityHelper.GetDirectoryLocalPaths(FSCLT::Get().GetExecutePath());
 		std::vector<std::string> stringPaths(path.size());
 		
 		for (const auto& item : path)
@@ -110,7 +111,7 @@ bool CPrint::HandlePrintInfoElement(const std::vector<std::string>& UserArgs, ui
 	for (const auto& arg : UserArgs)
 	{
 		bool Found = false;
-		for (const auto& element : GetDirectoryLocalPaths(FSCLT::Get().GetExecutePath()))
+		for (const auto& element : FilesystemUtilityHelper::Get().GetDirectoryLocalPaths(FSCLT::Get().GetExecutePath()))
 		{
 			if (element.stem() == arg)
 			{
@@ -129,22 +130,3 @@ bool CPrint::HandlePrintInfoElement(const std::vector<std::string>& UserArgs, ui
 
 }
 
-std::vector<std::filesystem::path> CPrint::GetDirectoryRecursivePaths(const std::filesystem::path& searchPath) const
-{
-	std::vector<fs::path> paths;
-	for (const auto& item : fs::recursive_directory_iterator(searchPath))
-	{
-		paths.push_back(item);
-	}
-	return paths;
-}
-
-std::vector<std::filesystem::path> CPrint::GetDirectoryLocalPaths(const std::filesystem::path& searchPath) const
-{
-	std::vector<fs::path> paths;
-	for (const auto& item : fs::directory_iterator(searchPath))
-	{
-		paths.push_back(item);
-	}
-	return paths;
-}

@@ -1,6 +1,6 @@
 #pragma once
 
-#define BIND_COMMAND(pattern, function) BindCommand(pattern, std::bind(&CPrint::function, this, std::placeholders::_1, std::placeholders::_2))
+#define BIND_COMMAND(pattern, Class, function) BindCommand(pattern, std::bind(&Class::function, this, std::placeholders::_1, std::placeholders::_2))
 
 constexpr const char* ARG_USER_INP = "@USER_INPUT@";
 constexpr const char* ARG_MULTI_INP = "@MULTI_INPUT@";

@@ -15,9 +15,6 @@ private:
 
 	// Inherited via BaseCommand
 	void PrintUsageInfo() const override;
-	
-	std::vector<std::filesystem::path> GetDirectoryRecursivePaths(const std::filesystem::path& searchPath) const;
-	std::vector<std::filesystem::path> GetDirectoryLocalPaths(const std::filesystem::path& searchPath) const;
 
 private:
 	

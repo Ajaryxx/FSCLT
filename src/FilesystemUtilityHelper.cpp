@@ -320,3 +320,23 @@ std::string FilesystemUtilityHelper::CheckElementType(const std::filesystem::pat
 {
 	return fs::is_directory(path) ? "Folder" : "File";
 }
+std::vector<std::filesystem::path> FilesystemUtilityHelper::GetDirectoryRecursivePaths(const std::filesystem::path& searchPath) const
+{
+	std::vector<fs::path> paths;
+	for (const auto& item : fs::recursive_directory_iterator(searchPath))
+	{
+		paths.push_back(item);
+	}
+	return paths;
+}
+
+std::vector<std::filesystem::path> FilesystemUtilityHelper::GetDirectoryLocalPaths(const std::filesystem::path& searchPath) const
+{
+
+	std::vector<fs::path> paths;
+	for (const auto& item : fs::directory_iterator(searchPath))
+	{
+		paths.push_back(item);
+	}
+	return paths;
+}

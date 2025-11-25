@@ -141,4 +141,7 @@ void FSCLT::InitzializeCommands()
 {
 	//Print useful information like version or commands
 	DECLARE_COMMAND_FLAG("print", CPrint);
+
+	//for searching something in a FS
+	DECLARE_COMMAND_FLAG("search", CSearch);
 }
