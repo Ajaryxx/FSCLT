@@ -35,6 +35,7 @@ public:
 	void Seperate();
 
 	void PrintList(const std::vector<std::string>& list, const std::string& listName, Color color = Color::WHITE);
+	void PrintGroup(const std::string& headline, const std::vector<std::string>& list);
 
 private:
 	std::string GetMessageTypeString(MessageType messageType);

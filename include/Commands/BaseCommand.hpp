@@ -43,7 +43,8 @@ protected:
 	void ReportInvalidCommand();
 
 	//Extract all flags from this vec
-	std::vector<std::string> ExtractParamFlags(size_t offset, size_t& jumpedOver);
+	//End points after the last flag
+	std::vector<std::string> ExtractParamFlags(size_t& start, size_t& end);
 
 	uint8_t GetParamFlagsAsFlag(const std::vector<std::string>& flagsVec) const;
 

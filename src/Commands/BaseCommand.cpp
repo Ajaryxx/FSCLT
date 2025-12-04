@@ -40,64 +40,64 @@ bool BaseCommand::Execute()
 
 bool BaseCommand::ParseCommand(const std::vector<std::string>& pattern, std::vector<std::string>& userArgs, uint8_t& paramFlag)
 {
-	size_t i = 0;
+	size_t Start;
+	size_t End;
+	const std::vector<std::string> ParamFlags = ExtractParamFlags(Start, End);
+	paramFlag = GetParamFlagsAsFlag(ParamFlags);
 
-	for (const auto& item : pattern)
+	if (Start >= m_v_args.size())
+		return false;
+
+	for (size_t i = 0; i < Start; i++)
 	{
-		if (item == ARG_PARAM_FLAGS)
-		{
-			size_t jumped;
-			std::vector<std::string> vec = ExtractParamFlags(i, jumped);
+		if (pattern[i] != m_v_args[i])
+			return false;
+	}
 
-			paramFlag = GetParamFlagsAsFlag(vec);
-		
-			i += jumped;
-			continue;
-		}
-		else if (item == ARG_USER_INP)
+	for (size_t i = 0; i < pattern.size(); i++)
+	{
+		if (pattern[i] == ARG_USER_INP)
 		{
-			userArgs.push_back(m_v_args[i]);
+			userArgs.push_back(m_v_args[Start + i]);
 		}
-		else if (item == ARG_MULTI_INP)
+		else if (pattern[i] == ARG_MULTI_INP)
 		{
-			std::copy(m_v_args.begin() + i, m_v_args.end(), std::back_inserter(userArgs));
+			std::copy(m_v_args.begin() + End, m_v_args.end(), std::back_inserter(userArgs));
 			break;
 		}
-		else if (i >= m_v_args.size() || item != m_v_args[i])
-			return false;
-
-			i++;
 	}
-	
+
 	return true;
 }
-std::vector<std::string> BaseCommand::ExtractParamFlags(size_t offset, size_t& jumpedOver)
+std::vector<std::string> BaseCommand::ExtractParamFlags(size_t& start, size_t& end)
 {
 	std::vector<std::string> extractedFlags;
-	jumpedOver = 0;
+	start = 0;
+	end = 0;
 
-	size_t ParseJump = 0;
-
-	auto it = m_v_args.begin() + offset;
-
-	if (it == m_v_args.end() || m_v_args[offset][0] != '-')
-		return extractedFlags;
-
-	for (auto it = m_v_args.cbegin() + offset; it != m_v_args.cend(); it++)
+	for (size_t i = 0; i < m_v_args.size(); i++)
 	{
-		if (it->at(0) == '-')
+		if (m_v_args[i][0] == '-')
 		{
-			if(std::find(extractedFlags.begin(), extractedFlags.end(), *it) == extractedFlags.end())
-				extractedFlags.push_back(*it);
-
-			ParseJump++;
+			start = i;
+			extractedFlags.push_back(m_v_args[i]);
+			break;
+		}
+	}
+	end = start;
+	for (size_t j = start; j < m_v_args.size(); j++, end++)
+	{
+		if (m_v_args[j][0] == '-')
+		{
+			if(std::find(extractedFlags.begin(), extractedFlags.end(), m_v_args[j]) == extractedFlags.end())
+				extractedFlags.push_back(m_v_args[j]);
 		}
 		else
 		{
 			break;
 		}
+		
 	}
-	jumpedOver = ParseJump;
 
 	return extractedFlags;
 }

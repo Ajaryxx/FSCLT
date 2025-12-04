@@ -83,7 +83,6 @@ bool CPrint::HandlePrintListDirectory(const std::vector<std::string>& UserArgs, 
 		for (const auto& item : path)
 			std::transform(path.begin(), path.end(), stringPaths.begin(), [&](const fs::path& str) 
 				{ 
-					
 					std::string strPath = str.string();
 					std::string type;
 					if (fs::is_directory(strPath))

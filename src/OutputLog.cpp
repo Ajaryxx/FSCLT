@@ -128,7 +128,7 @@ void OutputLog::PrintList(const std::vector<std::string>& list, const std::strin
 	{
 		outputStr.append("[" + std::to_string(i) + "] ");
 		outputStr.append(item).push_back('\n');
-		outputStr.append(MakeSeperatorWithLenght(item.size())).push_back('\n');
+		outputStr.append(MakeSeperatorWithLenght(70));
 		i++;
 	}
 
@@ -140,5 +140,18 @@ std::string OutputLog::MakeSeperatorWithLenght(size_t size)
 	for (size_t i = 0; i < size; i++)
 		sep.push_back('-');
 
+	sep.push_back('\n');
 	return sep;
+}
+void OutputLog::PrintGroup(const std::string& headline, const std::vector<std::string>& list)
+{
+	std::string outputStr;
+	outputStr.append("\n---------------------" + headline + "---------------------\n");
+	for (const auto& item : list)
+	{
+		outputStr.append(item).push_back('\n');
+	}
+
+	SendOutput(outputStr);
+
 }
