@@ -100,7 +100,7 @@ std::vector<std::string> FSCLT::CatchArguments(size_t offset, size_t& newOffset)
 	std::vector<std::string> args;
 	for (size_t i = offset; i < m_Argc; i++)
 	{
-		if (m_Argv[i] != "AND")
+		if (m_Argv[i] != ";")
 		{
 			args.push_back(m_Argv[i]);
 		}

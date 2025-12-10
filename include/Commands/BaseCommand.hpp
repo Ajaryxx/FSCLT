@@ -10,15 +10,15 @@ constexpr const char* ARG_PARAM_FLAGS = "@PARAM_FLAG@";
 enum EFLAG_PARAM : uint8_t
 {
 	//No flag set
-	ENONE = 0x00,
-	//List flag
-	EFLAG_LIST = 0x01,
+	ENONE = 0x01,
 	//recursuve flag
 	EFLAG_RECURSIVE = 0x02,
 	//local flag
 	EFLAG_LOC = 0x04,
 	//info flag
 	EFLAG_INFO = 0x08,
+	//info flag
+	EFLAG_LIST = 0x10,
 };
 
 class BaseCommand
@@ -48,23 +48,26 @@ protected:
 
 	uint8_t GetParamFlagsAsFlag(const std::vector<std::string>& flagsVec) const;
 
-	//Checks if there are paremeters. If no parameters were found it prints an error message
-	bool CheckParemetersFound(const std::vector<std::string>& args, const std::string& commandHandle) const;
 private:
 	std::string m_CommandName;
 
 	//Parses the command. If it returns false the command couldn't found
-	bool ParseCommand(const std::vector<std::string>& pattern, std::vector<std::string>& userArgs, uint8_t& paramFlag);
+	std::vector<std::pair<std::vector<std::string>, std::function<bool(const std::vector<std::string>& userArgs, uint8_t ParamFlags)>>>
+		TryParseCommand(std::vector<std::string>& userArgs, uint8_t& paramFlag);
+
+	size_t GetUserParamPosition(const std::vector<std::string>& pattern) const;
+	
+	std::vector<std::vector<std::string>> MatchUserArgumentsWithPattern();
 
 	const std::unordered_map<std::string, EFLAG_PARAM> m_um_Flags
 	{
 		//recursive
 		{"-r", EFLAG_PARAM::EFLAG_RECURSIVE},
-		//list
-		{"-l", EFLAG_PARAM::EFLAG_LIST},
 		//local
 		{"-loc", EFLAG_PARAM::EFLAG_LOC},
 		//info
-		{"-i", EFLAG_PARAM::EFLAG_INFO},
+		{"-info", EFLAG_PARAM::EFLAG_INFO},
+		//list
+		{"-list", EFLAG_PARAM::EFLAG_LIST},
 	};
 };

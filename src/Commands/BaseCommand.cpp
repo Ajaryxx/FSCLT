@@ -17,91 +17,111 @@ void BaseCommand::BindCommand(const std::vector<std::string>& pattern, std::func
 bool BaseCommand::Execute()
 {
 	bool SearchSuccess = false;
-	for (size_t i = 0; i < m_v_CommandDispatch.size(); i++)
-	{
-		const std::vector<std::string>& pattern = m_v_CommandDispatch[i].first;
+	
+	std::vector<std::string> UserArgs;
+	uint8_t ParamFlag;
+	auto test = TryParseCommand(UserArgs, ParamFlag);
 		
-		std::vector<std::string> UserArgs;
-		uint8_t ParamFlag;
-		SearchSuccess = ParseCommand(pattern, UserArgs, ParamFlag);
-		
-		if (SearchSuccess)
-		{	
-			const bool ExecuteSuccess = m_v_CommandDispatch[i].second(UserArgs, ParamFlag);
+	if (SearchSuccess)
+	{	
+		const bool ExecuteSuccess = m_v_CommandDispatch[i].second(UserArgs, ParamFlag);
 
-			return ExecuteSuccess;
-		}
+		return ExecuteSuccess;
 	}
+
 	if (!SearchSuccess)
 		ReportInvalidCommand();
 
 	return SearchSuccess;
 }
 
-bool BaseCommand::ParseCommand(const std::vector<std::string>& pattern, std::vector<std::string>& userArgs, uint8_t& paramFlag)
+std::vector<std::pair<std::vector<std::string>, std::function<bool(const std::vector<std::string>& userArgs, uint8_t ParamFlags)>>>
+
+BaseCommand::TryParseCommand(std::vector<std::string>& userArgs, uint8_t& paramFlag)
 {
-	size_t Start;
-	size_t End;
-	const std::vector<std::string> ParamFlags = ExtractParamFlags(Start, End);
-	paramFlag = GetParamFlagsAsFlag(ParamFlags);
+	/*std::vector<std::vector<std::string>> matchingPatterns = MatchUserArgumentsWithPattern();
 
-	if (Start >= m_v_args.size())
-		return false;
-
-	for (size_t i = 0; i < Start; i++)
+	for (auto it = matchingPatterns.begin(); it != matchingPatterns.end(); )
 	{
-		if (pattern[i] != m_v_args[i])
-			return false;
-	}
-
-	for (size_t i = 0; i < pattern.size(); i++)
-	{
-		if (pattern[i] == ARG_USER_INP)
+		size_t firstParamLocation = GetUserParamPosition(*it);
+	
+		for (size_t i = 0; i < firstParamLocation; i++)
 		{
-			userArgs.push_back(m_v_args[Start + i]);
+			if (i >= m_v_args.size() || m_v_args[i] != it->at(i))
+			{
+				it = matchingPatterns.erase(it);
+				break;
+			}
+			
 		}
-		else if (pattern[i] == ARG_MULTI_INP)
-		{
-			std::copy(m_v_args.begin() + End, m_v_args.end(), std::back_inserter(userArgs));
+		if (it == matchingPatterns.end())
 			break;
-		}
+		else
+			it++;
 	}
 
-	return true;
+*/
+
+	return matchingPatterns;
+}
+std::vector<std::vector<std::string>> BaseCommand::MatchUserArgumentsWithPattern()
+{
+	std::vector<std::vector<std::string>> MatchingPatterns;
+	for (const auto& item : m_v_CommandDispatch)
+	{
+		MatchingPatterns.push_back(item.first);
+	}
+	
+	/*
+		We want to go through all command patterns and sort all patterns out which are not equal to the users arguments.
+		We first go through all command patterns and check the 0 string in m_v_args and 0 string in pattern.
+		We reapeat it until checkLocation is bigger then the arguments in m_v_args
+	*/
+
+	size_t checkLocation = 0;
+	while (!(checkLocation >= m_v_args.size()))
+	{
+		for (auto it = MatchingPatterns.begin(); it != MatchingPatterns.end();)
+		{
+			if (m_v_args[checkLocation] != it->at(checkLocation))
+			{
+				it = MatchingPatterns.erase(it);
+			}
+			else
+			{
+				it++;
+			}
+		}
+		checkLocation++;
+	}
+
+	return MatchingPatterns;
 }
 std::vector<std::string> BaseCommand::ExtractParamFlags(size_t& start, size_t& end)
 {
 	std::vector<std::string> extractedFlags;
-	start = 0;
-	end = 0;
 
-	for (size_t i = 0; i < m_v_args.size(); i++)
-	{
-		if (m_v_args[i][0] == '-')
-		{
-			start = i;
-			extractedFlags.push_back(m_v_args[i]);
-			break;
-		}
-	}
-	end = start;
-	for (size_t j = start; j < m_v_args.size(); j++, end++)
-	{
-		if (m_v_args[j][0] == '-')
-		{
-			if(std::find(extractedFlags.begin(), extractedFlags.end(), m_v_args[j]) == extractedFlags.end())
-				extractedFlags.push_back(m_v_args[j]);
-		}
-		else
-		{
-			break;
-		}
-		
-	}
 
 	return extractedFlags;
 }
+size_t BaseCommand::GetUserParamPosition(const std::vector<std::string>& pattern) const
+{
+	size_t i = 0;
+	for (const auto& item : pattern)
+	{
+		if (
+			item == ARG_USER_INP ||
+			item == ARG_PARAM_FLAGS ||
+			item == ARG_MULTI_INP
+			)
+		{
+			return i;
+		}
+		i++;
+	}
 
+	return 0;
+}
 void BaseCommand::ReportInvalidCommand()
 {
 	std::string errorString = "Couldn't find Command: " + m_CommandName + " ";
@@ -120,6 +140,7 @@ uint8_t BaseCommand::GetParamFlagsAsFlag(const std::vector<std::string>& flagsVe
 		auto it = m_um_Flags.find(item);
 		if (it != m_um_Flags.end())
 		{
+			flags &= ~EFLAG_PARAM::ENONE;
 			flags |= it->second;
 		}
 		else
@@ -130,13 +151,4 @@ uint8_t BaseCommand::GetParamFlagsAsFlag(const std::vector<std::string>& flagsVe
 	}
 	
 	return flags;
-}
-bool BaseCommand::CheckParemetersFound(const std::vector<std::string>& args, const std::string& commandHandle) const
-{
-	if (args.empty())
-	{
-		OutputLog::Get().ReportStatus("No valid paremeter(s) for: " + commandHandle + " found.", MessageType::EERROR);
-		return false;
-	}
-	return true;
 }
