@@ -1,5 +1,5 @@
 #include "PCH.hpp"
-#include "Commands/CPrint.hpp"
+#include "CommandModules/CPrint.hpp"
 #include "FSCLT.hpp"
 #include "OutputLog.hpp"
 #include "FilesystemUtilityHelper.hpp"
@@ -7,16 +7,16 @@
 
 namespace fs = std::filesystem;
 
-CPrint::CPrint(const std::vector<std::string>& args) : BaseCommand(CMD_NAME, args)
+CPrint::CPrint(const std::vector<std::string>& args) : BaseCommandModule(CMD_NAME, args)
 {
 	//prints out the current Tool version
 	BIND_COMMAND(std::vector<std::string>({ "info", "version"}), CPrint, HandlePrintOutVersion);
 
 	//prints out the usage from command(s)
-	BIND_COMMAND(std::vector<std::string>({ "info", "command", ARG_MULTI_INP}), CPrint, HandlePrintOutCommandInfo);
+	BIND_COMMAND(std::vector<std::string>({ "info", "command", ARG_PARAM_FLAGS, ARG_MULTI_INP}), CPrint, HandlePrintListDirectory);
 
 	//prints out the usage from command(s)
-	BIND_COMMAND(std::vector<std::string>({ "info", "command","dir", ARG_MULTI_INP}), CPrint, HandlePrintOutCommandInfo);
+	BIND_COMMAND(std::vector<std::string>({ "info", "command", "dir", ARG_MULTI_INP}), CPrint, HandlePrintOutCommandInfo);
 
 	//prints out the directory list
 	BIND_COMMAND(std::vector<std::string>({ "list", "dir", ARG_MULTI_INP}), CPrint, HandlePrintListDirectory);
@@ -38,7 +38,7 @@ bool CPrint::HandlePrintOutVersion(const std::vector<std::string>& UserArgs, uin
 
 bool CPrint::HandlePrintOutCommandInfo(const std::vector<std::string>& UserArgs, uint8_t flags)
 {
-
+	OutputLog::Get().SendOutput("buz buz");
 	return true;
 }
 
@@ -47,7 +47,7 @@ bool CPrint::HandlePrintListDirectory(const std::vector<std::string>& UserArgs, 
 	OutputLog& log = OutputLog::Get();
 	FilesystemUtilityHelper& utilityHelper = FilesystemUtilityHelper::Get();
 
-
+	OutputLog::Get().SendOutput("biz biz");
 	return true;
 }
 

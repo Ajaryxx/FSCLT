@@ -1,6 +1,6 @@
 #include "PCH.hpp"
 #include "FSCLT.hpp"
-#include "Commands/Commands.hpp"
+#include "CommandModules/Commands.hpp"
 #include "OutputLog.hpp"
 
 FSCLT* FSCLT::fsclt = nullptr;
@@ -112,7 +112,7 @@ std::vector<std::string> FSCLT::CatchArguments(size_t offset, size_t& newOffset)
 	newOffset = args.size() + 1;
 	return args;
 }
-const std::vector<BaseCommand*>& FSCLT::GetAllCommands() const
+const std::vector<BaseCommandModule*>& FSCLT::GetAllCommands() const
 {
 	for (auto it = m_um_CommandFlags.begin(); it != m_um_CommandFlags.end(); it++)
 	{
@@ -121,13 +121,13 @@ const std::vector<BaseCommand*>& FSCLT::GetAllCommands() const
 
 	return m_v_TempCommandBuffer;
 }
-BaseCommand* FSCLT::GetCommand(const std::string& name) const
+BaseCommandModule* FSCLT::GetCommand(const std::string& name) const
 {
 	auto it = m_um_CommandFlags.find(name);
 
 	if (it != m_um_CommandFlags.end())
 	{
-		BaseCommand* cmd = it->second(false, std::vector<std::string>());
+		BaseCommandModule* cmd = it->second(false, std::vector<std::string>());
 		return cmd;
 	}
 	return nullptr;

@@ -21,11 +21,11 @@ enum EFLAG_PARAM : uint8_t
 	EFLAG_LIST = 0x10,
 };
 
-class BaseCommand
+class BaseCommandModule
 {
 public:
-	BaseCommand(const std::string& commandName, const std::vector<std::string>& args) : m_v_args(args), m_CommandName(commandName) {}
-	virtual ~BaseCommand() = default;
+	BaseCommandModule(const std::string& commandName, const std::vector<std::string>& args) : m_v_args(args), m_CommandName(commandName) {}
+	virtual ~BaseCommandModule() = default;
 
 	inline std::string GetCommandFlag() const
 	{
@@ -44,20 +44,25 @@ protected:
 
 	//Extract all flags from this vec
 	//End points after the last flag
-	std::vector<std::string> ExtractParamFlags(size_t& start, size_t& end);
+	std::vector<std::string> ExtractParamFlags();
 
 	uint8_t GetParamFlagsAsFlag(const std::vector<std::string>& flagsVec) const;
 
 private:
 	std::string m_CommandName;
 
+	std::vector<std::string> GetCloseMatchingPattern(const std::vector<std::vector<std::string>>& vec);
 	//Parses the command. If it returns false the command couldn't found
-	std::vector<std::pair<std::vector<std::string>, std::function<bool(const std::vector<std::string>& userArgs, uint8_t ParamFlags)>>>
-		TryParseCommand(std::vector<std::string>& userArgs, uint8_t& paramFlag);
+	bool TryParseUserCommand(std::pair<std::vector<std::string>, std::function<bool(const std::vector<std::string>& userArgs, uint8_t ParamFlags)>>& cmd,
+			std::vector<std::string>& userArgs, uint8_t& paramFlags);
+	bool IsEqualWithPattern(const std::vector<std::string>& pattern, std::pair<std::vector<std::string>, std::function<bool(const std::vector<std::string>& userArgs, uint8_t ParamFlags)>> element);
 
-	size_t GetUserParamPosition(const std::vector<std::string>& pattern) const;
-	
-	std::vector<std::vector<std::string>> MatchUserArgumentsWithPattern();
+	size_t GetFirstUserParamPosition(const std::vector<std::string>& pattern) const;
+
+	std::vector<std::vector<std::string>> GetMatchingPatterns();
+	void GetUserArgumentsWithPattern(const std::vector<std::string>& pattern, std::vector<std::string>& userArgs, uint8_t& paramFlags);
+
+	bool IsParameter(const std::vector<std::string>& pattern, size_t location) const;
 
 	const std::unordered_map<std::string, EFLAG_PARAM> m_um_Flags
 	{

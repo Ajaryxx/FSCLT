@@ -1,5 +1,5 @@
 #include "PCH.hpp"
-#include "Commands/CSearch.hpp"
+#include "CommandModules/CSearch.hpp"
 #include "OutputLog.hpp"
 #include "FilesystemUtilityHelper.hpp"
 #include "FSCLT.hpp"
@@ -7,7 +7,7 @@
 namespace fs = std::filesystem;
 
 
-CSearch::CSearch(const std::vector<std::string>& args) : BaseCommand(CSEARCH_NAME, args)
+CSearch::CSearch(const std::vector<std::string>& args) : BaseCommandModule(CSEARCH_NAME, args)
 {
 	//searches for an element in the filesystem
 	BIND_COMMAND(std::vector<std::string>({"element", ARG_PARAM_FLAGS, ARG_MULTI_INP}), CSearch, HandleSearchElement);

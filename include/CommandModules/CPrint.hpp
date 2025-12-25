@@ -1,11 +1,11 @@
 #pragma once
-#include "Commands/BaseCommand.hpp"
+#include "CommandModules/BaseCommandModule.hpp"
 
 constexpr const char* CMD_NAME = "print";
 
 constexpr const char* HANDLE_SEARCH = "HANDLE_SEARCH";
 
-class CPrint : public BaseCommand
+class CPrint : public BaseCommandModule
 {
 public:
 
@@ -13,7 +13,7 @@ public:
 
 private:
 
-	// Inherited via BaseCommand
+	// Inherited via BaseCommandModule
 	void PrintUsageInfo() const override;
 
 private:

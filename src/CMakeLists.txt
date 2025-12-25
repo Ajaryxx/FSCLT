@@ -4,4 +4,4 @@ target_sources(${PROJ_EXE} PRIVATE
 "FilesystemUtilityHelper.cpp" 
 )
 
-add_subdirectory(Commands)
+add_subdirectory(CommandModules)

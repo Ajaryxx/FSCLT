@@ -1,4 +1,4 @@
 target_sources(${PROJ_EXE} PRIVATE
-"BaseCommand.cpp"
+"BaseCommandModule.cpp"
 "CPrint.cpp" 
 "CSearch.cpp")
