@@ -9,8 +9,9 @@ class CPrint : public BaseCommandModule
 {
 public:
 
-	CPrint(const std::vector<std::string>& args);
+	CPrint();
 
+	int a = 1;
 private:
 
 	// Inherited via BaseCommandModule

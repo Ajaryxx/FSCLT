@@ -12,20 +12,10 @@ FSCLT::FSCLT(int argc, const std::vector<std::string>& argv)
 	this->m_Argv = argv;
 	fsclt = this;
 
-
 	InitzializeCommands();
 }
 FSCLT::~FSCLT()
 {
-	if (!m_v_TempCommandBuffer.empty())
-	{
-		for (auto& item : m_v_TempCommandBuffer)
-		{
-			delete item;
-			item = nullptr;
-		}
-		m_v_TempCommandBuffer.clear();
-	}
 	if (!m_v_Commands.empty())
 	{
 		for (auto& item : m_v_Commands)
@@ -51,7 +41,7 @@ bool FSCLT::Run()
 	for (const auto& item : m_v_Commands)
 	{
 		OutputLog::Get().ReportStatus("Trying to execute: " + item->GetCommandFlag() + "...", MessageType::INFO, 1);
-	
+
 		if (!item->Execute())
 		{
 			OutputLog::Get().ReportStatus("Failed to execute: " + item->GetCommandFlag(), MessageType::EERROR, 1);
@@ -59,13 +49,6 @@ bool FSCLT::Run()
 			break;
 		}
 		OutputLog::Get().ReportStatus("Execution successful: " + item->GetCommandFlag(), MessageType::INFO, 1);
-		
-		for (auto& item : m_v_TempCommandBuffer)
-		{
-			delete item;
-			item = nullptr;
-		}
-		m_v_TempCommandBuffer.clear();
 	}
 
 	return succes;
@@ -75,16 +58,21 @@ bool FSCLT::ParseCommandLine()
 	//Jump over path to exe
 	for (size_t i = 1; i < m_Argc; i++)
 	{
+		//does prefix exists already?
 		auto it = m_um_CommandFlags.find(m_Argv[i]);
 
 		if (it != m_um_CommandFlags.end())
 		{
 			size_t newOffset;
-			//Jump over current string(Command string)
-			std::vector<std::string> buffer = CatchArguments(i + 1, newOffset);
+			
+			std::vector<std::string> args = CatchArguments(i + 1, newOffset, ';');
+
 			//Stores the Command to the vector buffer so we can execute it later
-			it->second(true, buffer);
-			i += newOffset;
+			it->second->InitializeArguments(args);
+			m_v_Commands.push_back(it->second);
+
+			//jump over all arguments of this current Command
+			i += args.size();
 		}
 		else
 		{
@@ -95,53 +83,29 @@ bool FSCLT::ParseCommandLine()
 	}
 	return true;
 }
-std::vector<std::string> FSCLT::CatchArguments(size_t offset, size_t& newOffset)
+std::vector<std::string> FSCLT::CatchArguments(size_t offset, size_t& newOffset, char StopPrefix)
 {
 	std::vector<std::string> args;
 	for (size_t i = offset; i < m_Argc; i++)
 	{
-		if (m_Argv[i] != ";")
+		if (m_Argv[i][0] != StopPrefix)
 		{
 			args.push_back(m_Argv[i]);
 		}
 		else
 			break;
 	}
-
-	//to jump over '|'
+	//to jump over the prefix
 	newOffset = args.size() + 1;
+
 	return args;
-}
-const std::vector<BaseCommandModule*>& FSCLT::GetAllCommands() const
-{
-	for (auto it = m_um_CommandFlags.begin(); it != m_um_CommandFlags.end(); it++)
-	{
-		it->second(false, std::vector<std::string>());
-	}
-
-	return m_v_TempCommandBuffer;
-}
-BaseCommandModule* FSCLT::GetCommand(const std::string& name) const
-{
-	auto it = m_um_CommandFlags.find(name);
-
-	if (it != m_um_CommandFlags.end())
-	{
-		BaseCommandModule* cmd = it->second(false, std::vector<std::string>());
-		return cmd;
-	}
-	return nullptr;
-}
-FSCLT& FSCLT::Get()
-{
-	return *fsclt;
 }
 
 void FSCLT::InitzializeCommands()
 {
-	//Print useful information like version or commands
+	//Print useful information like version or command info
 	DECLARE_COMMAND_FLAG("print", CPrint);
 
-	//for searching something in a FS
-	DECLARE_COMMAND_FLAG("search", CSearch);
+
+	
 }

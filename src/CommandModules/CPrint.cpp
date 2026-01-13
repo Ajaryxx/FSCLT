@@ -7,7 +7,7 @@
 
 namespace fs = std::filesystem;
 
-CPrint::CPrint(const std::vector<std::string>& args) : BaseCommandModule(CMD_NAME, args)
+CPrint::CPrint() : BaseCommandModule(CMD_NAME)
 {
 	//prints out the current Tool version
 	BIND_COMMAND(std::vector<std::string>({ "info", "version"}), CPrint, HandlePrintOutVersion);
@@ -21,7 +21,7 @@ CPrint::CPrint(const std::vector<std::string>& args) : BaseCommandModule(CMD_NAM
 	//prints out the directory list
 	BIND_COMMAND(std::vector<std::string>({ "list", "dir", ARG_MULTI_INP}), CPrint, HandlePrintListDirectory);
 
-	//prints out the info if this/these element(s)
+	//prints out the info of this/these element(s)
 	BIND_COMMAND(std::vector<std::string>({ "info", "element", ARG_MULTI_INP}), CPrint, HandlePrintInfoElement);
 }
 
