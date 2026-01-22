@@ -1,6 +1,6 @@
 #include "PCH.hpp"
-#include "FilesystemUtilityHelper.hpp"
-#include "OutputLog.hpp"
+#include "Utility/FilesystemUtilityHelper.hpp"
+#include "Utility/OutputLog.hpp"
 
 namespace fs = std::filesystem;
 

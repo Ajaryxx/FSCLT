@@ -1,18 +1,14 @@
 #include "PCH.hpp"
 #include "CommandModules/BaseCommandModule.hpp"
-#include "OutputLog.hpp"
+#include "Utility/OutputLog.hpp"
 #include "FSCLT.hpp"
 
 
-void BaseCommandModule::BindCommand(const std::vector<std::string>& pattern, std::function<bool(const std::vector<std::string>& userArg, uint8_t paramFlag)> func)
+void BaseCommandModule::SetModuleName(const std::string& ModuleName)
 {
-	for (size_t i = 0; i < m_v_CommandDispatch.size(); i++)
-	{
-		const std::vector<std::string>& strVec = m_v_CommandDispatch[i].first;
-		
-		assert(!(strVec == pattern) && "You cant bind a command with the same pattern");
-	}
-	m_v_CommandDispatch.push_back(std::make_pair(pattern, func));
+	this->m_CommandModuleName = ModuleName;
+
+	REQUIRED_ASSERT(m_CommandModuleName.empty(), "MODULE NAME MUST BE SET");
 }
 
 bool BaseCommandModule::Execute()
@@ -27,10 +23,68 @@ void BaseCommandModule::InitializeArguments(const std::vector<std::string>& args
 
 void BaseCommandModule::ReportInvalidCommand()
 {
-	std::string errorString = "Couldn't find Command: " + m_CommandName + " ";
+	
+}
+void BaseCommandModule::DeclareSubCommand(const std::string& pattern,
+	std::function<bool(const std::vector<std::string>&, uint8_t UserArgs)> func)
+{
+	OutputLog::Get().PrintList(ResolvePattern(pattern), "Pattern");
+}
+std::vector<std::string> BaseCommandModule::ResolvePattern(const std::string& pattern)
+{
+	std::vector<std::string> patternVec;
+	
+	for (size_t i = 0; i < pattern.size(); i++)
+	{
+		if (pattern[i] == '{')
+		{
+			std::string str = RetrievePatternParam(pattern, i);
+			patternVec.push_back(str);
+			i += str.size();
+		}
+		else if (pattern[i] != ' ')
+		{
+			std::string temp = ConsumeCmdIdentifier(pattern, i);
+			patternVec.push_back(temp);
+			i += temp.size();
+		}
+	}
 
-	for (const auto& item : m_v_args)
-		errorString.append(item + " ");
+	return patternVec;
+}
+std::string BaseCommandModule::ConsumeCmdIdentifier(const std::string& str, size_t pos)
+{
+	std::string temp;
+	size_t CurPos = pos;
+	for (CurPos = pos; CurPos < str.size(); CurPos++)
+	{
+		if (str[CurPos] != ' ')
+		{
+			temp.push_back(str[CurPos]);
+		}
+		else
+		{
+			break;
+		}
 
-	OutputLog::Get().ReportStatus(errorString, MessageType::EERROR);
+	}
+	return temp;
+}
+std::string BaseCommandModule::RetrievePatternParam(const std::string& str, size_t pos)
+{
+	size_t CurPos = pos;
+	for (CurPos = pos; CurPos < str.size(); CurPos++)
+	{
+		if (str[CurPos] == ' ')
+			break;
+
+		else if (str[CurPos] == '}')
+		{
+			return std::string(str.begin() + pos, str.begin() + CurPos+1);
+		}
+			
+	}
+	REQUIRED_ASSERT(1, "End of string reached! There is no closing }");
+
+	return std::string();
 }

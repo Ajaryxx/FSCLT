@@ -1,5 +1,5 @@
 #include "PCH.hpp"
-#include "OutputLog.hpp"
+#include "Utility/OutputLog.hpp"
 
 namespace fs = std::filesystem;
 

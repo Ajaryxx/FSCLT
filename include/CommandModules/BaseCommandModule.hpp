@@ -1,11 +1,6 @@
 #pragma once
 
-#define BIND_COMMAND(pattern, Class, function) BindCommand(pattern, std::bind(&Class::function, this, std::placeholders::_1, std::placeholders::_2))
-
-constexpr const char* ARG_USER_INP = "@USER_INPUT@";
-constexpr const char* ARG_MULTI_INP = "@MULTI_INPUT@";
-constexpr const char* ARG_PARAM_FLAGS = "@PARAM_FLAG@";
-
+#define DECLARE_SUB_COMMAND(pattern, CommandModule, func) DeclareSubCommand(pattern, std::bind(&CommandModule::func, this, std::placeholders::_1, std::placeholders::_2))
 
 enum EFLAG_PARAM : uint8_t
 {
@@ -24,36 +19,35 @@ enum EFLAG_PARAM : uint8_t
 class BaseCommandModule
 {
 public:
-	BaseCommandModule(const std::string& commandName) : m_CommandName(commandName) {}
+	BaseCommandModule(const std::string& m_CommandModuleName) : m_CommandModuleName(m_CommandModuleName) { }
 	virtual ~BaseCommandModule() = default;
 
-	inline std::string GetCommandFlag() const { return m_CommandName; }
-
-	virtual void PrintUsageInfo() const = 0;
-	bool Execute();
+public:
+	void SetModuleName(const std::string& ModuleName);
 
 	void InitializeArguments(const std::vector<std::string>& args);
 
-protected:
-	void BindCommand(const std::vector<std::string>& pattern, std::function<bool(const std::vector<std::string>& userArg, uint8_t paramFlag)> func);
+	inline std::string GetCommandModuleName() const { return m_CommandModuleName; }
 
+	virtual void PrintUsageInfo() const = 0;
+
+	bool Execute();
+
+protected:
 	std::vector<std::string> m_v_args;
-	std::vector<std::pair<std::vector<std::string>, std::function<bool(const std::vector<std::string>& userArgs, uint8_t ParamFlags)>>> m_v_CommandDispatch;
 
 	void ReportInvalidCommand();
 
-private:
-	std::string m_CommandName;
+	void DeclareSubCommand(const std::string& pattern,
+		std::function<bool(const std::vector<std::string>&, uint8_t UserArgs)> func);
 
-	const std::unordered_map<std::string, EFLAG_PARAM> m_um_Flags
-	{
-		//recursive
-		{"-r", EFLAG_PARAM::EFLAG_RECURSIVE},
-		//local
-		{"-loc", EFLAG_PARAM::EFLAG_LOC},
-		//info
-		{"-info", EFLAG_PARAM::EFLAG_INFO},
-		//list
-		{"-list", EFLAG_PARAM::EFLAG_LIST},
-	};
+private:
+	std::vector<std::string> ResolvePattern(const std::string& pattern);	
+	std::string ConsumeCmdIdentifier(const std::string& str, size_t pos);
+	std::string RetrievePatternParam(const std::string& str, size_t pos);
+
+private:
+	std::string m_CommandModuleName;
+
+
 };

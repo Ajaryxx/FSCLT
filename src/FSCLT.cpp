@@ -1,7 +1,7 @@
 #include "PCH.hpp"
 #include "FSCLT.hpp"
 #include "CommandModules/Commands.hpp"
-#include "OutputLog.hpp"
+#include "Utility/OutputLog.hpp"
 
 FSCLT* FSCLT::fsclt = nullptr;
 
@@ -38,21 +38,29 @@ bool FSCLT::Run()
 	if (!succes)
 		return false;
 
-	for (const auto& item : m_v_Commands)
-	{
-		OutputLog::Get().ReportStatus("Trying to execute: " + item->GetCommandFlag() + "...", MessageType::INFO, 1);
-
-		if (!item->Execute())
-		{
-			OutputLog::Get().ReportStatus("Failed to execute: " + item->GetCommandFlag(), MessageType::EERROR, 1);
-			succes = false;
-			break;
-		}
-		OutputLog::Get().ReportStatus("Execution successful: " + item->GetCommandFlag(), MessageType::INFO, 1);
-	}
+	succes = ExecuteCommands();
 
 	return succes;
 }
+
+bool FSCLT::ExecuteCommands()
+{
+	for (const auto& item : m_v_Commands)
+	{
+		OutputLog::Get().ReportStatus("Trying to execute: " + item->GetCommandModuleName() + "...", MessageType::INFO, 1);
+
+		if (!item->Execute())
+		{
+			OutputLog::Get().ReportStatus("Failed to execute: " + item->GetCommandModuleName(), MessageType::EERROR, 1);
+			return false;
+			
+		}
+		OutputLog::Get().ReportStatus("Execution successful: " + item->GetCommandModuleName(), MessageType::INFO, 1);
+	}
+
+	return true;
+}
+
 bool FSCLT::ParseCommandLine()
 {
 	//Jump over path to exe

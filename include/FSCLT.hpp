@@ -1,8 +1,6 @@
 #pragma once
+#include "Utility/HelperMacros.hpp"
 
-#define DECLARE_COMMAND_FLAG(CommandPrefix, Class) DelcareCommand<Class>(CommandPrefix)
-#define STATIC_IS_BASE_OF(Parent, Child, Text) static_assert(std::is_base_of<Parent, Child>::value, Text)
-#define REQUIERED_ASSERT(Check, Message) assert(!(Check) && Message)
 
 class BaseCommandModule;
 
@@ -43,6 +41,9 @@ private:
 
 	void InitzializeCommands();
 	
+	//returns false if the execution of a command has failed
+	bool ExecuteCommands();
+
 private:
 	//command storage
 
@@ -50,31 +51,31 @@ private:
 	std::unordered_map<std::string, BaseCommandModule*> m_um_CommandFlags;
 	
 	template<typename T>
-	void DelcareCommand(const std::string& CommandPrefix);
+	void DelcareCommand(const std::string& CommandModulePrefix);
 
 	//Pushes the command to the temp or Command buffer
 	template<typename T>
-	BaseCommandModule* PushCommand(const std::string& commandPrefix);
+	BaseCommandModule* PushCommand(const std::string& CommandModulePrefix);
 	
 };
 
 template<typename T>
-BaseCommandModule* FSCLT::PushCommand(const std::string& commandPrefix)
+BaseCommandModule* FSCLT::PushCommand(const std::string& CommandModulePrefix)
 {
 	BaseCommandModule* cmd = new T();
 
-	REQUIERED_ASSERT(m_um_CommandFlags.find(commandPrefix) != m_um_CommandFlags.end(), "Command Prefix exists already");
+	REQUIRED_ASSERT(m_um_CommandFlags.find(CommandModulePrefix) != m_um_CommandFlags.end(), "Command Prefix exists already");
 
-	m_um_CommandFlags[commandPrefix] = cmd;
+	m_um_CommandFlags[CommandModulePrefix] = cmd;
 
 	return cmd;
 }
 
 template<typename T>
-void FSCLT::DelcareCommand(const std::string& CommandPrefix)
+void FSCLT::DelcareCommand(const std::string& CommandModulePrefix)
 {
 	STATIC_IS_BASE_OF(BaseCommandModule, T, "T must derive from BaseCommandModule");
-	REQUIERED_ASSERT(m_um_CommandFlags.find(CommandPrefix) != m_um_CommandFlags.end(), "There is already a Command declared with the same Command Flag");
+	REQUIRED_ASSERT(m_um_CommandFlags.find(CommandModulePrefix) != m_um_CommandFlags.end(), "There is already a Command declared with the same Command Flag");
 
-	PushCommand<T>(CommandPrefix);
+	PushCommand<T>(CommandModulePrefix);
 }

@@ -1,28 +1,15 @@
 #include "PCH.hpp"
 #include "CommandModules/CPrint.hpp"
 #include "FSCLT.hpp"
-#include "OutputLog.hpp"
-#include "FilesystemUtilityHelper.hpp"
+#include "Utility/OutputLog.hpp"
+#include "Utility/FilesystemUtilityHelper.hpp"
 #include "config.hpp"
 
 namespace fs = std::filesystem;
 
-CPrint::CPrint() : BaseCommandModule(CMD_NAME)
+CPrint::CPrint() : BaseCommandModule(MODULE_NAME)
 {
-	//prints out the current Tool version
-	BIND_COMMAND(std::vector<std::string>({ "info", "version"}), CPrint, HandlePrintOutVersion);
-
-	//prints out the usage from command(s)
-	BIND_COMMAND(std::vector<std::string>({ "info", "command", ARG_PARAM_FLAGS, ARG_MULTI_INP}), CPrint, HandlePrintListDirectory);
-
-	//prints out the usage from command(s)
-	BIND_COMMAND(std::vector<std::string>({ "info", "command", "dir", ARG_MULTI_INP}), CPrint, HandlePrintOutCommandInfo);
-
-	//prints out the directory list
-	BIND_COMMAND(std::vector<std::string>({ "list", "dir", ARG_MULTI_INP}), CPrint, HandlePrintListDirectory);
-
-	//prints out the info of this/these element(s)
-	BIND_COMMAND(std::vector<std::string>({ "info", "element", ARG_MULTI_INP}), CPrint, HandlePrintInfoElement);
+	DECLARE_SUB_COMMAND("info version {ARGS} {USER_PARAM}", CPrint, HandlePrintOutVersion);
 }
 
 void CPrint::PrintUsageInfo() const

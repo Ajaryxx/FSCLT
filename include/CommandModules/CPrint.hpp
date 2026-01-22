@@ -1,7 +1,7 @@
 #pragma once
 #include "CommandModules/BaseCommandModule.hpp"
 
-constexpr const char* CMD_NAME = "print";
+constexpr const char* MODULE_NAME = "print";
 
 constexpr const char* HANDLE_SEARCH = "HANDLE_SEARCH";
 
@@ -11,7 +11,6 @@ public:
 
 	CPrint();
 
-	int a = 1;
 private:
 
 	// Inherited via BaseCommandModule
