@@ -45,9 +45,19 @@ private:
 	std::vector<std::string> ResolvePattern(const std::string& pattern);	
 	std::string ConsumeCmdIdentifier(const std::string& str, size_t pos);
 	std::string RetrievePatternParam(const std::string& str, size_t pos);
+	//returns true if illegal characters were found
+	bool CheckIllegalCharacters(const std::string& pattern);
+
+
+	std::unordered_map<std::string, std::function<bool(const std::vector<std::string>&, uint8_t UserArgs)>> m_um_CommandDispatch;
 
 private:
 	std::string m_CommandModuleName;
 
-
+	//Characters that are not allowed to use in a pattern
+	std::vector<char> m_v_IllegalCharacters{ 
+		'\t',
+		'\n',
+		'\r'
+	};
 };

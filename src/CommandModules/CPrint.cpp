@@ -9,7 +9,8 @@ namespace fs = std::filesystem;
 
 CPrint::CPrint() : BaseCommandModule(MODULE_NAME)
 {
-	DECLARE_SUB_COMMAND("info version {ARGS} {USER_PARAM}", CPrint, HandlePrintOutVersion);
+	DECLARE_SUB_COMMAND("info version test {ARGS} {USER_PARAM}", CPrint, HandlePrintOutVersion);
+	
 }
 
 void CPrint::PrintUsageInfo() const

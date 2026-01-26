@@ -28,26 +28,51 @@ void BaseCommandModule::ReportInvalidCommand()
 void BaseCommandModule::DeclareSubCommand(const std::string& pattern,
 	std::function<bool(const std::vector<std::string>&, uint8_t UserArgs)> func)
 {
-	OutputLog::Get().PrintList(ResolvePattern(pattern), "Pattern");
+	ResolvePattern(pattern);
+	
+	REQUIRED_ASSERT(m_um_CommandDispatch.find(pattern) != m_um_CommandDispatch.end(),
+		"There exists already a Command with the same pattern!");
+
+	m_um_CommandDispatch[pattern] = func;
 }
 std::vector<std::string> BaseCommandModule::ResolvePattern(const std::string& pattern)
 {
 	std::vector<std::string> patternVec;
-	
+	if (CheckIllegalCharacters(pattern))
+	{
+		REQUIRED_ASSERT(true, "Illegal characters found!");
+		return std::vector<std::string>();
+	}
+		
 	for (size_t i = 0; i < pattern.size(); i++)
 	{
-		if (pattern[i] == '{')
+		std::string temp;
+		
+		switch (pattern[i])
 		{
-			std::string str = RetrievePatternParam(pattern, i);
-			patternVec.push_back(str);
-			i += str.size();
+
+		case '{':
+			temp = RetrievePatternParam(pattern, i);
+			break;
+
+		case '}':
+			//This character is usually skipped if a '{' were detected
+			REQUIRED_ASSERT(true, "Unskipped closed parenthesis detected. Did you forget to add an open parenthesis?");
+			break;
+
+		default:
+			temp = ConsumeCmdIdentifier(pattern, i);
+			break;
+
 		}
-		else if (pattern[i] != ' ')
+		
+		if (!temp.empty())
 		{
-			std::string temp = ConsumeCmdIdentifier(pattern, i);
 			patternVec.push_back(temp);
 			i += temp.size();
+			OutputLog::Get().SendOutput("Current proccesed string: " + temp);
 		}
+		
 	}
 
 	return patternVec;
@@ -56,6 +81,7 @@ std::string BaseCommandModule::ConsumeCmdIdentifier(const std::string& str, size
 {
 	std::string temp;
 	size_t CurPos = pos;
+
 	for (CurPos = pos; CurPos < str.size(); CurPos++)
 	{
 		if (str[CurPos] != ' ')
@@ -63,28 +89,35 @@ std::string BaseCommandModule::ConsumeCmdIdentifier(const std::string& str, size
 			temp.push_back(str[CurPos]);
 		}
 		else
-		{
 			break;
-		}
-
+		
 	}
 	return temp;
 }
 std::string BaseCommandModule::RetrievePatternParam(const std::string& str, size_t pos)
 {
-	size_t CurPos = pos;
-	for (CurPos = pos; CurPos < str.size(); CurPos++)
+	//Skip '{'
+	for (size_t CurPos = pos + 1; CurPos < str.size(); CurPos++)
 	{
-		if (str[CurPos] == ' ')
+		if (str[CurPos] == ' ' || str[CurPos] == '{')
 			break;
 
 		else if (str[CurPos] == '}')
-		{
 			return std::string(str.begin() + pos, str.begin() + CurPos+1);
-		}
-			
 	}
-	REQUIRED_ASSERT(1, "End of string reached! There is no closing }");
+	REQUIRED_ASSERT(true, "Unexpected '{' found");
 
 	return std::string();
+}
+bool BaseCommandModule::CheckIllegalCharacters(const std::string& pattern)
+{
+	for (const auto& patt : pattern)
+	{
+		for (const auto& c : m_v_IllegalCharacters)
+		{
+			if (patt == c)
+				return true;
+		}
+	}
+	return false;
 }
