@@ -64,7 +64,7 @@ BaseCommandModule* FSCLT::PushCommand(const std::string& CommandModulePrefix)
 {
 	BaseCommandModule* cmd = new T();
 
-	REQUIRED_ASSERT(m_um_CommandFlags.find(CommandModulePrefix) != m_um_CommandFlags.end(), "Command Prefix exists already");
+	IS_TRUE_ASSERT(m_um_CommandFlags.find(CommandModulePrefix) != m_um_CommandFlags.end(), "Command Prefix exists already");
 
 	m_um_CommandFlags[CommandModulePrefix] = cmd;
 
@@ -75,7 +75,7 @@ template<typename T>
 void FSCLT::DelcareCommand(const std::string& CommandModulePrefix)
 {
 	STATIC_IS_BASE_OF(BaseCommandModule, T, "T must derive from BaseCommandModule");
-	REQUIRED_ASSERT(m_um_CommandFlags.find(CommandModulePrefix) != m_um_CommandFlags.end(), "There is already a Command declared with the same Command Flag");
+	IS_TRUE_ASSERT(m_um_CommandFlags.find(CommandModulePrefix) != m_um_CommandFlags.end(), "There is already a Command declared with the same Command Flag");
 
 	PushCommand<T>(CommandModulePrefix);
 }

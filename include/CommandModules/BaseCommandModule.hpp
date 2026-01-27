@@ -42,22 +42,41 @@ protected:
 		std::function<bool(const std::vector<std::string>&, uint8_t UserArgs)> func);
 
 private:
+	//resolve pattern relateds
 	std::vector<std::string> ResolvePattern(const std::string& pattern);	
 	std::string ConsumeCmdIdentifier(const std::string& str, size_t pos);
 	std::string RetrievePatternParam(const std::string& str, size_t pos);
+
+	//returns true if the command pattern is formatted correctly
+	bool IsFormattedCorrectly(const std::string& pattern);
+
 	//returns true if illegal characters were found
-	bool CheckIllegalCharacters(const std::string& pattern);
+	bool HasIllegalCharacters(const std::string& pattern);
 
+	//returns true if a invalid character was found at start and end position
+	bool HasIllegalStartAndEndCharacter(const std::string& pattern);
 
-	std::unordered_map<std::string, std::function<bool(const std::vector<std::string>&, uint8_t UserArgs)>> m_um_CommandDispatch;
+	//returns true if useless spaces were found
+	bool CheckLeadingSpaces(const std::string& pattern);
 
+	//returns true if the bracket is not connected to another word
+	bool AreBracketsConnected(const std::string& pattern);
+
+	//Characters that are not allowed to use in a pattern
+	std::vector<char> m_v_IllegalCharacters{
+		'\t',
+		'\n',
+		'\r',
+		'\033',
+		'\v',
+		'\a',
+		'*',
+		'/',
+		'-',
+		'+',
+	};
 private:
 	std::string m_CommandModuleName;
 
-	//Characters that are not allowed to use in a pattern
-	std::vector<char> m_v_IllegalCharacters{ 
-		'\t',
-		'\n',
-		'\r'
-	};
+	std::unordered_map<std::string, std::function<bool(const std::vector<std::string>&, uint8_t UserArgs)>> m_um_CommandDispatch;
 };
